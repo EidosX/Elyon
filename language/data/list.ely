@@ -1,0 +1,33 @@
+// Copyright (c) 2023 Diego Imbert
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
+decl List
+  dat Cons(x, xs: List)
+  dat Nil
+
+isStr (:List) -> Bool
+isStr = is<List> && (⊆ Char)
+
+∈(:Any, :List) -> Bool
+∈(x, []) = False
+∈(x, [x, ...xs]) = True
+∈(x, [y, ...xs]) = x ∈ xs
+
+impl Container(List)
+  ⊆(t, []) = True
+  ⊆(t, [x, ...xs]) = x ∈ t && xs ⊆ t
+  pure(x) = [x]
+
+impl Functor(List)
+  map(f, []) = []
+  map(f, [x, ...xs]) = [f x, ...map f xs]
+
+impl Applicative(List)
+  apply([], l) = []
+  apply([f, ...fs], l) = [map f l, ...apply fs l]
+
+impl Monad(List)
+  chain(f, []) = f
+  chain(f, [x, ...xs]) = [...f x, ...chain f xs]

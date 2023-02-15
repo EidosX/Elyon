@@ -1,0 +1,26 @@
+// Copyright (c) 2023 Diego Imbert
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
+zeroArgFunction1 = 1
+zeroArgFunction2 = "a string"
+
+oneArgFunction1(x: U8) = x + 1
+
+twoArgFunction1(x: U8, y: U8) = x + y
+
+defaultArg1<a → U8 = x + y>(x: U8, y: U8) = a * x * y
+// Type is a special case, the default value will be guessed by the compiler
+defaultArg2<t → Type, u → Type>(x: t, y: u) → List ⊆ (t | u) = [x, y]
+
+// This takes type U8. The default argument evaluates and doesn't propagate.
+callingDefaultArg1 = defaultArg1(2, 3)
+callingDefaultArg2<a = 10> = defaultArg1<a>(2, 3)
+callingDefaultArg3 = defaultArg2('a', "b")
+callingDefaultArg4 = defaultArg2<_, Str>('a', "b")
+callingDefaultArg5 = defaultArg2<Char, Str>('a', "b")
+
+currying1 = twoArgFunction1(10)(20)
+currying2 = map(isOdd) ▹ filter(⟳) ▹ takeWhile(<= 100)
+

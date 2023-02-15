@@ -1,0 +1,22 @@
+// Copyright (c) 2023 Diego Imbert
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
+decl Bool
+  dat True
+  dat False
+
+&&(True, True) = True
+&&(:Bool, :Bool) = False
+
+||(False, False) = False
+||(:Bool, :Bool) = True
+
+¬(True) = False
+¬(False) = True
+
+==(a, a) = True
+==(a, b) = False
+
+!=(a, b) = ¬(a == b)

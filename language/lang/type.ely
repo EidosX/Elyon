@@ -1,0 +1,32 @@
+// Copyright (c) 2023 Diego Imbert
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
+trait Type(type)
+  is(x) → Bool
+
+dat Exact(x)
+impl Type(Exact y)
+  is(x) = x == y
+
+dat Any
+impl Type(Any)
+  is(x) = True
+
+dat Void
+impl Type(Void)
+  is(x) = False
+
+dat Union(t1: Type, t2: Type)
+impl Type(Union(t1, t2))
+  is(x) = is<t1>(x) || is<t2>(x)
+
+dat Intersection(t1: Type, t2: Type)
+  is(x) = is<t1>(x) && is<t2>(x)
+
+dat Constrained(t: Type, f: t → Bool)
+impl Type(Constrained(t, f))
+  is(x) = is<t>(x) && f(x)
+
+subsets(super: Type, sub: Type) → Bool = is<sub> ==> is<super>

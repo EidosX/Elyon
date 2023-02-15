@@ -1,0 +1,7 @@
+// Copyright (c) 2023 Diego Imbert
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
+trait Functor(type: Container)
+  map<t → Type, u → Type>(:t → u, :type ⊆ t) → type ⊆ u
