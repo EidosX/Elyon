@@ -3,6 +3,6 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-trait Container(type: Type)
-  ⊆(:type, :Type) -> Bool
-  pure(x) -> type ⊆ Exact(x)
+trait Container for (type: Type)
+  ⊆(:type, :Type): Bool
+  pure(x): type ⊆ Exact(x)

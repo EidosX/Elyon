@@ -10,9 +10,9 @@ oneArgFunction1(x: U8) = x + 1
 
 twoArgFunction1(x: U8, y: U8) = x + y
 
-defaultArg1<a → U8 = x + y>(x: U8, y: U8) = a * x * y
+defaultArg1<a: U8 = x + y>(x: U8, y: U8) = a * x * y
 // Type is a special case, the default value will be guessed by the compiler
-defaultArg2<t → Type, u → Type>(x: t, y: u) → List ⊆ (t | u) = [x, y]
+defaultArg2<t: Type, u: Type>(x: t, y: u): List ⊆ (t | u) = [x, y]
 
 // This takes type U8. The default argument evaluates and doesn't propagate.
 callingDefaultArg1 = defaultArg1(2, 3)

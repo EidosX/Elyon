@@ -7,27 +7,26 @@ decl List
   dat Cons(x, xs: List)
   dat Nil
 
-isStr (:List) -> Bool
-isStr = is<List> && (⊆ Char)
+dat Str(:List ⊆ Char)
 
-∈(:Any, :List) -> Bool
+∈(:Any, :List): Bool
 ∈(x, []) = False
 ∈(x, [x, ...xs]) = True
 ∈(x, [y, ...xs]) = x ∈ xs
 
-impl Container(List)
+impl Container for List
   ⊆(t, []) = True
   ⊆(t, [x, ...xs]) = x ∈ t && xs ⊆ t
   pure(x) = [x]
 
-impl Functor(List)
+impl Functor for List
   map(f, []) = []
   map(f, [x, ...xs]) = [f x, ...map f xs]
 
-impl Applicative(List)
+impl Applicative for List
   apply([], l) = []
   apply([f, ...fs], l) = [map f l, ...apply fs l]
 
-impl Monad(List)
+impl Monad for List
   chain(f, []) = f
   chain(f, [x, ...xs]) = [...f x, ...chain f xs]

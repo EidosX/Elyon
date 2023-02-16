@@ -3,5 +3,5 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-trait Applicative(type: Functor)
-  apply<t → Type, u → Type>(:type ⊆ (t → u), :type ⊆ t) → type ⊆ u
+trait Applicative for (type: Functor)
+  apply<t: Type, u: Type>(:type ⊆ (t → u), :type ⊆ t): type ⊆ u
