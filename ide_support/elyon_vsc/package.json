@@ -1,0 +1,36 @@
+{
+  "name": "elyon",
+  "displayName": "Elyon",
+  "description": "Elyon Language Support",
+  "version": "0.0.1",
+  "repository": "https://github.com/EidosX/Elyon",
+  "engines": {
+    "vscode": "^1.54.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "elyon",
+        "aliases": [
+          "Elyon",
+          "elyon",
+          "ely"
+        ],
+        "extensions": [
+          ".ely"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "elyon",
+        "scopeName": "source.elyon",
+        "path": "./syntaxes/elyon.tmLanguage.json"
+      }
+    ]
+  }
+}
