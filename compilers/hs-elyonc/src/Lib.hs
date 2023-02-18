@@ -9,24 +9,36 @@ module Lib (
   intToTerm, floatToTerm, charToTerm, listToTerm, stringToTerm
 ) where
 
+import Data.List (intercalate)
+import Control.Arrow (first, second)
+
 data Term = TermVar String
           | TermLambda Pattern Term
           | TermAppl Term Term
   deriving (Eq)
 
-data Pattern = PatternVar String
-             | PatternCondition Pattern Term
-             | PatternMatch Term Term
+data Pattern = PatternCondition Pattern Term
+             | PatternMatch Term
   deriving (Show, Eq)
 
 (<.<) :: Term -> Term -> Term
 (<.<) = TermAppl
 infixl 6 <.<
 
+uncurryAppl :: Term -> (Term, [Term])
+uncurryAppl (TermAppl t1 t2) = second (++ [t2]) (uncurryAppl t1)
+uncurryAppl t = (t, [])
+
+uncurryLambda :: Term -> ([Pattern], Term)
+uncurryLambda (TermLambda x t) = first (x :) (uncurryLambda t)
+uncurryLambda t = ([], t)
+
 instance Show Term where
   show (TermVar s) = s
-  show (TermLambda x t) = "fn " <> show x <> " -> " <> show t
-  show (TermAppl t1 t2) = show t1 <> "(" <> show t2 <> ")"
+  show t@(TermLambda _ _) = "((" <> intercalate ", " (map show args) <> ") -> " <> show res <> ")"
+    where (args, res) = uncurryLambda t
+  show t@(TermAppl _ _) = show fn <> "(" <> intercalate ", " (map show args) <> ")"
+    where (fn, args) = uncurryAppl t
 
 intToTerm :: String -> Term
 intToTerm x = TermVar x -- TODO
