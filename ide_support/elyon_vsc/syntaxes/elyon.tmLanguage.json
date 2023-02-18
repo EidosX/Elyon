@@ -1,32 +1,68 @@
 {
-	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-	"name": "Elyon",
-	"patterns": [
-		{
-			"include": "#keywords"
-		},
-		{
-			"include": "#strings"
-		}
-	],
-	"repository": {
-		"keywords": {
-			"patterns": [{
-				"name": "keyword.control.elyon",
-				"match": "\\b(if|while|for|return)\\b"
-			}]
-		},
-		"strings": {
-			"name": "string.quoted.double.elyon",
-			"begin": "\"",
-			"end": "\"",
-			"patterns": [
-				{
-					"name": "constant.character.escape.elyon",
-					"match": "\\\\."
-				}
-			]
-		}
-	},
-	"scopeName": "source.elyon"
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Elyon",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#keywords" },
+    { "include": "#strings" },
+    { "include": "#chars" },
+    { "include": "#numbers" },
+    { "include": "#constructors" },
+    { "include": "#variables" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.elyon",
+          "match": "^//[^\\n]*$"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.elyon",
+          "match": "\\b(case|else|do|for)\\b"
+        },
+        {
+          "name": "storage.modifier.elyon",
+          "match": "\\b(trait|impl|decl|dat)\\b"
+        }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.elyon",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [{ "name": "constant.character.escape.elyon", "match": "\\\\." }]
+    },
+    "chars": {
+      "name": "string.quoted.single.elyon",
+      "begin": "'",
+      "end": "'",
+      "patterns": [{ "name": "constant.character.escape.elyon", "match": "\\\\." }]
+    },
+    "numbers": {
+      "name": "constant.numeric.elyon",
+      "match": "[0-9]+(\\.[0-9]+)?"
+    },
+    "constructors": {
+      "patterns": [
+        {
+          "name": "entity.name.type.elyon",
+          "match": "\\b[A-Z][a-zA-Z0-9_]*\\b"
+        }
+      ]
+    },
+    "variables": {
+      "patterns": [
+        {
+          "name": "variable.name.elyon",
+          "match": "\\b[a-z][a-zA-Z0-9_]*\\b"
+        }
+      ]
+    }
+  },
+  "scopeName": "source.elyon"
 }

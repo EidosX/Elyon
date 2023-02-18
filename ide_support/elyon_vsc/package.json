@@ -10,6 +10,9 @@
   "categories": [
     "Programming Languages"
   ],
+  "scripts": {
+    "dev-install": "cp -R . ~/.vscode/extensions/elyon.elyon-0.0.1"
+  },
   "contributes": {
     "languages": [
       {
