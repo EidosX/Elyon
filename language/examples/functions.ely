@@ -9,7 +9,7 @@ zeroArgFunction2 = "a string"
 oneArgFunction1(x: U8) = x + 1
 
 twoArgFunction1(x: U8, y: U8) = x + y
-twoArgFunction2 = (x: U8, y: U8) -> x + y
+twoArgFunction2 = fn(x: U8, y: U8) -> x + y
 
 defaultArg1<a: U8 = x + y>(x: U8, y: U8) = a * x * y
 // Type is a special case, the default value will be guessed by the compiler

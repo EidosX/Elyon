@@ -41,13 +41,13 @@ instance Show Term where
     where (fn, args) = uncurryAppl t
 
 intToTerm :: String -> Term
-intToTerm x = TermVar x -- TODO
+intToTerm x = TermVar ("int_" <> x) -- TODO
 
 floatToTerm :: (String, String) -> Term
-floatToTerm (int, dec) = TermVar (int <> "." <> dec) -- TODO
+floatToTerm (int, dec) = TermVar ("float_" <> int <> "." <> dec) -- TODO
 
 charToTerm :: Char -> Term
-charToTerm c = TermVar [c] -- TODO
+charToTerm c = TermVar ("char_" <> [c]) -- TODO
 
 listToTerm :: [Term] -> Term
 listToTerm [] = TermVar "data.list.Nil"
