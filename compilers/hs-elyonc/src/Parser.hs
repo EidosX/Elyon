@@ -41,6 +41,7 @@ singleTermNoApplP = parens termP
           <|> fmap listToTerm (listP termP)
           <|> fmap stringToTerm stringP
           <|> fmap TermVar varP
+          <|> try (liftA2 (<.<) (fmap TermVar operatorP) singleTermP)
           <|> fmap TermVar operatorP
 
 termP :: Parser Term
@@ -52,7 +53,7 @@ binopP :: Parser Term
 binopP = do
   l <- lx singleTermP
   op <- lx operatorP
-  r <- singleTermP
+  r <- termP
   return $ TermVar op <.< l <.< r
 
 operatorP :: Parser String
