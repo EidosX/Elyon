@@ -23,4 +23,4 @@ callingDefaultArg4 = defaultArg2<_, Str>('a', "b")
 callingDefaultArg5 = defaultArg2<Char, Str>('a', "b")
 
 currying1 = twoArgFunction1(10)(20)
-currying2 = map(isOdd) ▹ filter(⟳) ▹ takeWhile(<= 100)
+currying2 = map(isOdd) ▹ filter(↻) ▹ takeWhile(<= 100)

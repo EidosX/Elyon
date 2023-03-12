@@ -13,7 +13,7 @@ import Text.Parsec (many, many1, anyChar, between, string,
   oneOf, satisfy, space, endOfLine, (<|>))
 import Text.Parsec.Error (ParseError)
 import Control.Applicative (liftA2)
-import Lib (Pattern (..), Term (..), intToTerm, floatToTerm, charToTerm,
+import Lib (Pattern (..), Term (..), (<.<), intToTerm, floatToTerm, charToTerm,
             listToTerm, stringToTerm)
 import Data.Char (isSymbol)
 
@@ -41,9 +41,19 @@ singleTermNoApplP = parens termP
           <|> fmap listToTerm (listP termP)
           <|> fmap stringToTerm stringP
           <|> fmap TermVar varP
+          <|> fmap TermVar operatorP
 
 termP :: Parser Term
-termP = try lambdaP <|> singleTermP
+termP = try lambdaP 
+    <|> try binopP
+    <|> singleTermP
+
+binopP :: Parser Term
+binopP = do
+  l <- lx singleTermP
+  op <- lx operatorP
+  r <- singleTermP
+  return $ TermVar op <.< l <.< r
 
 operatorP :: Parser String
 operatorP = many1 (satisfy isSymbol <|> oneOf "<>+-/*$%@€£?&§:=~")
