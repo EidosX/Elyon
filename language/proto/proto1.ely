@@ -1,0 +1,21 @@
+// Copyright (c) 2023 Diego Imbert
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
+func1 = 1
+
+func2(x) = x
+
+func3(:Str, :Str): Str
+func3(firstName: Str, lastName: Str) = "Hello ${firstName} ${lastName}!"
+
+func4<x: Int = 2>: Int = x
+
+func5<t: Monad>(x: t ⊆ Int, y: t ⊆ Int) = do<t>
+  ret !x + !y
+
+func6 = f(2) ▹ g ▹ h(-1)
+  where f = +
+        g = ↻
+        h x y = x * y

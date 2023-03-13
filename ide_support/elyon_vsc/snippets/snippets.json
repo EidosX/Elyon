@@ -29,6 +29,11 @@
     "body": ["¬"],
     "description": "Negation operator"
   },
+  "Function Type Arrow (→)": {
+    "prefix": ["arr"],
+    "body": ["→"],
+    "description": "Function type arrow operator"
+  },
   "All (∀)": {
     "prefix": ["all"],
     "body": ["∀"],
@@ -43,6 +48,11 @@
     "prefix": ["none"],
     "body": ["∄"],
     "description": "None operator"
+  },
+  "Of / Subset (⊆)": {
+    "prefix": ["of", "subset"],
+    "body": ["⊆"],
+    "description": "Of / Subset operator"
   },
   "Element Of (∈)": {
     "prefix": ["in"],
