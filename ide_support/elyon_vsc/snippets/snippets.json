@@ -1,0 +1,52 @@
+{
+  "Right Composition (▹)": {
+    "prefix": ["rc", "right-compose"],
+    "body": ["▹"],
+    "description": "Right composition operator"
+  },
+  "Left Composition (◃)": {
+    "prefix": ["lc", "left-compose"],
+    "body": ["◃"],
+    "description": "Left composition operator"
+  },
+  "Right Application (▹)": {
+    "prefix": ["ra", "right-apply"],
+    "body": ["▸"],
+    "description": "Right application operator"
+  },
+  "Left Application (◃)": {
+    "prefix": ["la", "left-apply"],
+    "body": ["◂"],
+    "description": "Left application operator"
+  },
+  "Identity (↻)": {
+    "prefix": ["id", "identity"],
+    "body": ["↻"],
+    "description": "Identity function"
+  },
+  "Negation (¬)": {
+    "prefix": ["not"],
+    "body": ["¬"],
+    "description": "Negation operator"
+  },
+  "All (∀)": {
+    "prefix": ["all"],
+    "body": ["∀"],
+    "description": "All operator"
+  },
+  "Any (∃)": {
+    "prefix": ["any"],
+    "body": ["∃"],
+    "description": "Any operator"
+  },
+  "None (∄)": {
+    "prefix": ["none"],
+    "body": ["∄"],
+    "description": "None operator"
+  },
+  "Element Of (∈)": {
+    "prefix": ["in"],
+    "body": ["∈"],
+    "description": "\"Element Of\" operator"
+  }
+}

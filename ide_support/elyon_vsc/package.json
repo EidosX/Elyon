@@ -8,12 +8,19 @@
     "vscode": "^1.54.0"
   },
   "categories": [
-    "Programming Languages"
+    "Programming Languages",
+    "Snippets"
   ],
   "scripts": {
     "dev-install": "cp -R . ~/.vscode/extensions/elyon.elyon-0.0.1"
   },
   "contributes": {
+    "snippets": [
+      {
+        "language": "elyon",
+        "path": "./snippets/snippets.json"
+      }
+    ],
     "languages": [
       {
         "id": "elyon",
