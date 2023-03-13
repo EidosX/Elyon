@@ -8,7 +8,7 @@ def Ordering
   dat Equal
   dat Greater
 
-trait Ord for (t: Type)
+trait Ord<t: Type>
   compare(a: t, b: t): Ordering
 
 ==(a, a) = True

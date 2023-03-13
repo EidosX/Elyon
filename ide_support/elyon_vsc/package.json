@@ -32,7 +32,11 @@
         "extensions": [
           ".ely"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/elyon-icon.png",
+          "dark": "./icons/elyon-icon.png"
+        }
       }
     ],
     "grammars": [

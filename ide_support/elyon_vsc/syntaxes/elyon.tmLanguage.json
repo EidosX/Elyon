@@ -24,7 +24,7 @@
       "patterns": [
         {
           "name": "keyword.control.elyon",
-          "match": "\\b(match|if|elif|else|do|where|fn|for|ret)\\b"
+          "match": "\\b(match|if|elif|else|do|where|fn|ret)\\b"
         },
         {
           "name": "storage.modifier.elyon",

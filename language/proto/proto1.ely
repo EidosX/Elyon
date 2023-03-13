@@ -19,3 +19,6 @@ func6 = f(2) ▹ g ▹ h(-1)
   where f = +
         g = ↻
         h x y = x * y
+
+func7<t: Monad>(cx: t ⊆ Str, cy: t ) =
+  Monad<t>.bind(fn x -> cy, cx)
