@@ -3,6 +3,9 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
+using std.control.binop.{Binop}
+using std.control.binop.chaining
+
 def Bool
   dat True
   dat False
@@ -16,14 +19,14 @@ def Bool
 |(f: Bool → Bool, g: Bool → Bool) = fn(x) -> f(x) || g(x)
 &(f: Bool → Bool, g: Bool → Bool) = fn(x) -> f(x) && g(x)
 
-binopgroup LogicalDisjunctionPrecedence
+impl Binop<"LogicalDisjunction">
   operators = [||, |,]
-  associativity = right
+  chaining = chaining.right
 
-binopgroup LogicalConjunctionPrecedence
+impl Binop<"LogicalConjunction">
   operators = [&&, &,]
-  associativity = right
-  higherThan = [LogicalDisjunctionPrecedence]
+  chaining = chaining.right
+  higherThan = ["LogicalDisjunction"]
 
 ¬(True) = False
 ¬(False) = True

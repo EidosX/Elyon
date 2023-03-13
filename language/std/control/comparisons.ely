@@ -3,6 +3,11 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
+
+using std.control.binop.{Binop}
+using std.control.binop.chaining
+using std.data.ast.{Var}
+
 def Ordering
   dat Lesser
   dat Equal
@@ -15,23 +20,24 @@ trait Ord<t: Type>
 ==(a, b) = False
 !=(a, b) = ¬(a == b)
 
-(<)<t: Ord>(a: t, b: t) = compare(a, b) == Lesser
-(>)<t: Ord>(a: t, b: t) = compare(a, b) == Greater
-(<=)<t: Ord>(a: t, b: t) = a == b || a < b
-(>=)<t: Ord>(a: t, b: t) = a == b || a > b
+(<)<t: Ord>(a: t, b: t) = compare<t>(a, b) == Lesser
+(>)<t: Ord>(a: t, b: t) = compare<t>(a, b) == Greater
+(<=)<t: Ord>(a: t, b: t) = a == b || (<)<t>(a, b)
+(>=)<t: Ord>(a: t, b: t) = a == b || (>)<t>(a, b)
 
-binopgroup ComparisonPrecedence
+impl Binop<"Comparison">
   operators = [>, >=, <, <=, ==, !=]
-  higherThan = [LogicalConjunctionPrecedence]
-  chaining([x]) = True
-  chaining([a, op, b, ..xs]) = op(a, b) && chaining([b, ..xs])
+  chaining([a]) = Var(True)
+  chaining([a, op, b, ..xs]) = 
+    Var(&&) ◂ (op ◂ a ◂ b) ◂ chaining([b, ..xs])
+  higherThan = ["LogicalConjunction"]
 
-binopgroup AdditionPrecedence
+impl Binop<"Addition">
   operators = [+, -]
-  associativity = left
-  higherThan = [ComparisonPrecedence]
+  chaining = chaining.left
+  higherThan = ["Comparison"]
 
-binopgroup MultiplicationPrecedence
+impl Binop<"Multiplication">
   operator = [*, /]
-  associativity = left
-  higherThan = [AdditionPrecedence]
+  chaining = chaining.left
+  higherThan = ["Addition"]

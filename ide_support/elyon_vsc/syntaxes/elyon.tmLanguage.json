@@ -16,7 +16,7 @@
       "patterns": [
         {
           "name": "comment.line.double-slash.elyon",
-          "match": "^//[^\\n]*$"
+          "match": "//[^\\n]*$"
         }
       ]
     },
@@ -24,11 +24,11 @@
       "patterns": [
         {
           "name": "keyword.control.elyon",
-          "match": "\\b(match|if|elif|else|do|where|fn|ret)\\b"
+          "match": "\\b(error|match|if|elif|else|do|where|fn|ret)\\b"
         },
         {
           "name": "storage.modifier.elyon",
-          "match": "\\b(binopgroup|use|mod|trait|impl|def|dat)\\b"
+          "match": "\\b(binopgroup|using|module|trait|impl|def|dat)\\b"
         }
       ]
     },
@@ -59,16 +59,12 @@
     "variables": {
       "patterns": [
         {
+          "name": "entity.name.function.elyon",
+          "match": "\\b[a-z][a-zA-Z0-9_]*(?=( *<[^>]*>)? *\\()\\b"
+        },
+        {
           "name": "variable.name.elyon",
           "match": "\\b[a-z][a-zA-Z0-9_]*\\b"
-        }
-      ]
-    },
-    "operators": {
-      "patterns": [
-        {
-          "name": "keyword.operator.elyon",
-          "match": "[^\\p{L}\\d\\s'\"()\\[\\]{}]+"
         }
       ]
     }

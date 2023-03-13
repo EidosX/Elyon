@@ -1,0 +1,22 @@
+// Copyright (c) 2023 Diego Imbert
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
+using std.data.ast.{Term}
+
+trait Binop<group: Str>
+  operators: List ⊆ Any && notEmpty
+  chaining([a, ..xs: len ▹ isEven]: List ⊆ Term): Term = chaining.none
+  higherThan: List ⊆ Binop = []
+
+module chaining
+  // Right associativity
+  right([a]) = a
+  right([a, op, ..xs]: List ⊆ Term) = (op ◂ a) ◂ right(xs)
+  
+  // Left associativity
+  left([a]) = a
+  left([a, op, b, ..xs]: List ⊆ Term) = left([(op ◂ a) ◂ b, ..xs])
+
+  none(_) = error "Operator chaining is not supported"

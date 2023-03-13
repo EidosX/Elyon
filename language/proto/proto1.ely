@@ -22,3 +22,5 @@ func6 = f(2) ▹ g ▹ h(-1)
 
 func7<t: Monad>(cx: t ⊆ Str, cy: t ) =
   Monad<t>.bind(fn x -> cy, cx)
+
+func8(l: List ⊆ Int) = 2 * !l
