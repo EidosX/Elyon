@@ -24,7 +24,7 @@
       "patterns": [
         {
           "name": "keyword.control.elyon",
-          "match": "\\b(error|match|if|elif|else|do|where|fn|ret)\\b"
+          "match": "\\b(error|for|match|if|elif|else|do|where|fn|ret)\\b"
         },
         {
           "name": "storage.modifier.elyon",
@@ -36,7 +36,21 @@
       "name": "string.quoted.double.elyon",
       "begin": "\"",
       "end": "\"",
-      "patterns": [{ "name": "constant.character.escape.elyon", "match": "\\\\." }]
+      "patterns": [
+        { "name": "constant.character.escape.elyon", "match": "\\\\." },
+        {
+          "name": "meta.template.expression.elyon",
+          "begin": "\\{",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.template-expression.begin.elyon" }
+          },
+          "end": "\\}",
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.template-expression.end.elyon" }
+          },
+          "patterns": [{ "include": "$self" }]
+        }
+      ]
     },
     "chars": {
       "name": "string.quoted.single.elyon",

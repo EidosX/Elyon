@@ -4,7 +4,6 @@
 // https://opensource.org/licenses/MIT
 
 using std.control.binop.{Binop}
-using std.control.binop.chaining
 
 def Bool
   dat True
@@ -19,13 +18,15 @@ def Bool
 |(f: Bool → Bool, g: Bool → Bool) = fn(x) -> f(x) || g(x)
 &(f: Bool → Bool, g: Bool → Bool) = fn(x) -> f(x) && g(x)
 
-impl Binop<"LogicalDisjunction">
+impl Binop for "LogicalDisjunction"
   operators = [||, |,]
   chaining = chaining.right
+    using std.control.binop.chaining
 
-impl Binop<"LogicalConjunction">
+impl Binop for "LogicalConjunction"
   operators = [&&, &,]
   chaining = chaining.right
+    using std.control.binop.chaining
   higherThan = ["LogicalDisjunction"]
 
 ¬(True) = False

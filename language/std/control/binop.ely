@@ -3,20 +3,18 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-using std.data.ast.{Term}
-
-trait Binop<group: Str>
+trait Binop for (group: Str)
   operators: List ⊆ Any && notEmpty
-  chaining([a, ..xs: len ▹ isEven]: List ⊆ Term): Term = chaining.none
+  chaining([a, ..xs: len ▹ isEven]: List ⊆ Unchecked): Unchecked = chaining.none
   higherThan: List ⊆ Binop = []
 
 module chaining
   // Right associativity
   right([a]) = a
-  right([a, op, ..xs]: List ⊆ Term) = (op ◂ a) ◂ right(xs)
+  right([a, op, ..xs: notEmpty]: List ⊆ Unchecked) = op(a, right(xs))
   
   // Left associativity
   left([a]) = a
-  left([a, op, b, ..xs]: List ⊆ Term) = left([(op ◂ a) ◂ b, ..xs])
+  left([a, op, b, ..xs]: List ⊆ Unchecked) = left([op(a, b), ..xs])
 
   none(_) = error "Operator chaining is not supported"

@@ -6,14 +6,13 @@
 
 using std.control.binop.{Binop}
 using std.control.binop.chaining
-using std.data.ast.{Var}
 
 def Ordering
   dat Lesser
   dat Equal
   dat Greater
 
-trait Ord<t: Type>
+trait Ord for (t: Type)
   compare(a: t, b: t): Ordering
 
 ==(a, a) = True
@@ -25,19 +24,18 @@ trait Ord<t: Type>
 (<=)<t: Ord>(a: t, b: t) = a == b || (<)<t>(a, b)
 (>=)<t: Ord>(a: t, b: t) = a == b || (>)<t>(a, b)
 
-impl Binop<"Comparison">
+impl Binop for "Comparison"
   operators = [>, >=, <, <=, ==, !=]
-  chaining([a]) = Var(True)
-  chaining([a, op, b, ..xs]) = 
-    Var(&&) ◂ (op ◂ a ◂ b) ◂ chaining([b, ..xs])
+  chaining([a]) = True
+  chaining([a, op, b, ..xs]) = op(a, b) && chaining([b, ..xs])
   higherThan = ["LogicalConjunction"]
 
-impl Binop<"Addition">
+impl Binop for "Addition"
   operators = [+, -]
   chaining = chaining.left
   higherThan = ["Comparison"]
 
-impl Binop<"Multiplication">
+impl Binop for "Multiplication"
   operator = [*, /]
   chaining = chaining.left
   higherThan = ["Addition"]
