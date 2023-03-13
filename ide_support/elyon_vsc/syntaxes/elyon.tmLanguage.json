@@ -24,11 +24,11 @@
       "patterns": [
         {
           "name": "keyword.control.elyon",
-          "match": "\\b(case|else|do|where|fn|for|ret)\\b"
+          "match": "\\b(match|if|elif|else|do|where|fn|for|ret)\\b"
         },
         {
           "name": "storage.modifier.elyon",
-          "match": "\\b(trait|impl|decl|dat)\\b"
+          "match": "\\b(binopgroup|use|mod|trait|impl|def|dat)\\b"
         }
       ]
     },

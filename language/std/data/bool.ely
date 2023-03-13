@@ -1,0 +1,29 @@
+// Copyright (c) 2023 Diego Imbert
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
+def Bool
+  dat True
+  dat False
+
+&&(True, True) = True
+&&(:Bool, :Bool) = False
+
+||(False, False) = False
+||(:Bool, :Bool) = True
+
+|(f: Bool → Bool, g: Bool → Bool) = fn(x) -> f(x) || g(x)
+&(f: Bool → Bool, g: Bool → Bool) = fn(x) -> f(x) && g(x)
+
+binopgroup LogicalDisjunctionPrecedence
+  operators = [||, |,]
+  associativity = right
+
+binopgroup LogicalConjunctionPrecedence
+  operators = [&&, &,]
+  associativity = right
+  higherThan = [LogicalDisjunctionPrecedence]
+
+¬(True) = False
+¬(False) = True

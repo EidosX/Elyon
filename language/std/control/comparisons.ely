@@ -1,0 +1,37 @@
+// Copyright (c) 2023 Diego Imbert
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
+def Ordering
+  dat Lesser
+  dat Equal
+  dat Greater
+
+trait Ord for (t: Type)
+  compare(a: t, b: t): Ordering
+
+==(a, a) = True
+==(a, b) = False
+!=(a, b) = ¬(a == b)
+
+(<)<t: Ord>(a: t, b: t) = compare(a, b) == Lesser
+(>)<t: Ord>(a: t, b: t) = compare(a, b) == Greater
+(<=)<t: Ord>(a: t, b: t) = a == b || a < b
+(>=)<t: Ord>(a: t, b: t) = a == b || a > b
+
+binopgroup ComparisonPrecedence
+  operators = [>, >=, <, <=, ==, !=]
+  higherThan = [LogicalConjunctionPrecedence]
+  chaining([x]) = True
+  chaining([a, op, b, ..xs]) = op(a, b) && chaining([b, ..xs])
+
+binopgroup AdditionPrecedence
+  operators = [+, -]
+  associativity = left
+  higherThan = [ComparisonPrecedence]
+
+binopgroup MultiplicationPrecedence
+  operator = [*, /]
+  associativity = left
+  higherThan = [AdditionPrecedence]

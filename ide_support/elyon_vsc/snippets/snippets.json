@@ -29,7 +29,17 @@
     "body": ["¬"],
     "description": "Negation operator"
   },
-  "Function Type Arrow (→)": {
+  "Lambda Function": {
+    "prefix": ["fn", "lambda"],
+    "body": ["fn($1) -> $0"],
+    "description": "Lambda Function"
+  },
+  "Match Expression": {
+    "prefix": ["match"],
+    "body": ["match($1)", "\t$0"],
+    "description": "Match expression"
+  },
+  "Type Arrow (→)": {
     "prefix": ["arr"],
     "body": ["→"],
     "description": "Function type arrow operator"
