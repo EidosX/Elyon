@@ -4,7 +4,7 @@
 -- https://opensource.org/licenses/MIT
 
 module Elyon.Parser.Terms (
-  PTerm (..), PTermPattern (..),
+  PTerm (..), PTPattern (..),
   termP, termPatternP
 ) where
 
@@ -12,33 +12,64 @@ import Elyon.Parser (Parser, lx, lxs)
 import Elyon.Parser.Patterns (PPattern (..), patternP)
 import Elyon.Parser.Terms.Simple (simpleTermP, PSimpleTerm (..),
   operatorP, argListP)
+import Elyon.Parser.Terms.DoNotation (DoNotationBody (..), 
+  doNotationP)
 import Data.Functor (($>))
 import Data.List (intercalate)
-import Text.Parsec ((<|>), try, char, string, many1)
-import Text.Parsec.Indent (indented)
+import Control.Applicative (liftA2)
+import Text.Parsec ((<|>), try, char, string, many1, between,
+  lookAhead)
+import Text.Parsec.Indent (indented, withPos, withBlock)
 
 data PTerm = 
     PT_Simple (PSimpleTerm PTerm)
-  | PT_Lambda [PTermPattern] PTerm
+  | PT_Match PTerm [(PTPattern, PTerm)]
+  | PT_IfElse PTerm PTerm PTerm -- Condition Then Else
+  | PT_DoNotation (DoNotationBody PTPattern PTerm)
+  | PT_Lambda [PTPattern] PTerm
+  | PT_Binops [PSimpleTerm PTerm] -- 3 > x >= 12 becomes [3, >, x, >=, 12]
   | PT_PartialBinop
       (Maybe (PSimpleTerm PTerm))
       (PSimpleTerm PTerm)
       (Maybe (PSimpleTerm PTerm))
-  | PT_Binops [PSimpleTerm PTerm] -- 3 > x >= 12 becomes [3, >, x, >=, 12]
   deriving (Eq)
 
-newtype PTermPattern =
-  PTermPattern (PPattern (PSimpleTerm PTermPattern) PTerm)
+newtype PTPattern =
+  PTPattern (PPattern (PSimpleTerm PTPattern) PTerm)
   deriving (Eq)
 
-termPatternP :: Parser PTermPattern
-termPatternP = fmap PTermPattern $
+termPatternP :: Parser PTPattern
+termPatternP = fmap PTPattern $
   patternP (simpleTermP termPatternP) termP
 
 termP :: Parser PTerm
 termP = lambdaP
-    <|> partialLeftBinopP 
+    <|> matchExprP
+    <|> ifElseP
+    <|> fmap PT_DoNotation (doNotationP termPatternP termP)
+    <|> partialLeftBinopP
     <|> manyBinopsP
+  
+
+matchExprP :: Parser PTerm
+matchExprP = withBlock PT_Match (lxs matchTermP) casesP
+  where matchTermP =
+          try (lx (string "match")) *>
+               between (lx $ char '(') (char ')') termP
+        casesP = withPos $ lxs (liftA2 (,) 
+                  (lx termPatternP <* lxs (string "->")) 
+                  (indented *> termP))
+
+
+ifElseP :: Parser PTerm
+ifElseP = do
+  if' <- try (lx (string "if")) 
+         *> lxs (between (lx $ char '(') (char ')') (lx termP))
+  then' <- indented *> lxs termP
+  let elifP = try (lookAhead (string "elif")) 
+              *> string "el" *> ifElseP
+      elseP = lxs (string "else") *> indented *> termP
+  fmap (PT_IfElse if' then') (indented *> (elifP <|> elseP))
 
 lambdaP :: Parser PTerm
 lambdaP = try (string "fn") *> do
@@ -73,13 +104,17 @@ manyBinopsP = do
 
 instance Show PTerm where
   show (PT_Simple x) = show x
+  show (PT_Match t l) = "match (" <> show t <> ")" <> show l
+  show (PT_IfElse if' then' else') = "if (" <> show if' <> ") "
+    <> show then' <> " else " <> show else'
+  show (PT_DoNotation doBody) = show doBody
   show (PT_Binops l) = intercalate " " $ map show l
   show (PT_PartialBinop l op r) = unwords [f l, show op, f r]
     where f Nothing = "_"
           f (Just x) = show x
   show (PT_Lambda args x) =
-    "fn" <> "(" <> intercalate ", " (map show args)
+    "fn " <> "(" <> intercalate ", " (map show args)
     <> ") -> " <> show x
 
-instance Show PTermPattern where
-  show (PTermPattern x) = show x
+instance Show PTPattern where
+  show (PTPattern x) = show x
