@@ -24,6 +24,7 @@ library
       Elyon.Parser
       Elyon.Parser.Lists
       Elyon.Parser.Primitives
+      Elyon.Parser.Terms
   other-modules:
       Paths_hs_elyonc
   hs-source-dirs:
