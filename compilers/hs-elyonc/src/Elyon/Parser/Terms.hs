@@ -30,6 +30,7 @@ data ParserTerm =
   | PTChar Char
   | PTString [InterpolatedStringContent ParserTerm]
   | PTList [ListLiteralContent ParserTerm]
+  | PTDefaultArgs Text [(ParserPattern, Maybe ParserTerm)]
   | PTAppl ParserTerm [ParserTerm]
   | PTBinops [ParserTerm] -- [3, >, x, >=, 12]
   | PTPartialBinop (Maybe ParserTerm) ParserTerm (Maybe ParserTerm)
@@ -49,6 +50,10 @@ instance Show ParserTerm where
           f (ISCInterpolated t) curr =
               curr <> "{" <> show t <> "}"
   show (PTList l) = show l
+  show (PTDefaultArgs s args) = 
+    unpack s <> "<" <> intercalate ", " (map f args) <> ">"
+    where f (p, Nothing) = show p
+          f (p, Just val) = show p <> " = " <> show val
   show (PTAppl f args) = show f <> "(" <> 
     intercalate ", " (map show args) <> ")" 
   show (PTBinops binops) = unwords $ map show binops
@@ -61,30 +66,31 @@ instance Show ParserTerm where
     <> show t
   show (PTParens t) = "(" <> show t <> ")"
 
-
 termP :: Parser ParserTerm
-termP = do
-  let termNoApplP = 
-            lambdaP
-        <|> try (fmap PTFloat floatP)
-        <|> fmap PTInt intP
-        <|> fmap PTChar charP
-        <|> fmap PTString (interpolatedStringP termP)
-        <|> fmap PTList (listLiteralP termP)
-        <|> fmap PTVar varP
-        <|> fmap PTVar operatorP
-        <|> partialLeftBinopP
-        <|> between (char '(') (char ')') (fmap PTParens termP)
+termP = termWithBinopP
 
-  let applsP = lx (return ()) *> many (lx applP)
-      applP = between (lx $ char '(') (char ')') $
-        sepEndBy (lx termP) (lx $ char ',')
-  
-  let termWithApplsP = liftA2 (foldl PTAppl) 
-        termNoApplP applsP
-  
+termNoApplP :: Parser ParserTerm
+termNoApplP = lambdaP
+          <|> try (fmap PTFloat floatP)
+          <|> fmap PTInt intP
+          <|> fmap PTChar charP
+          <|> fmap PTString (interpolatedStringP termP)
+          <|> fmap PTList (listLiteralP termP)
+          <|> try (fmap (uncurry PTDefaultArgs) defaultArgsP)
+          <|> fmap PTVar varP
+          <|> fmap PTVar operatorP
+          <|> partialLeftBinopP
+          <|> between (char '(') (char ')') (fmap PTParens termP)
+
+termWithApplsP :: Parser ParserTerm
+termWithApplsP = liftA2 (foldl PTAppl) termNoApplP applsP
+  where applsP = lx (return ()) *> many (lx applP)
+        applP = between (lx $ char '(') (char ')') $
+          sepEndBy (lx termP) (lx $ char ',')
+
+termWithBinopP :: Parser ParserTerm
+termWithBinopP = do
   lTerm <- termWithApplsP
-
   let partialBinopP = do
         lx (return ()) 
         op <- lx (fmap PTVar operatorP) 
@@ -98,7 +104,7 @@ termP = do
         rTerm <- indented *> termWithApplsP
         return [op, rTerm]
   
-  try partialBinopP <|> binopsP <|> return lTerm
+  try partialBinopP <|> try binopsP <|> return lTerm
 
 varP :: Parser Text
 varP = fromString <$> 
@@ -107,6 +113,18 @@ varP = fromString <$>
 operatorP :: Parser Text
 operatorP = fromString <$> 
   many1 (satisfy isSymbol <|> oneOf "+-=<>?*$§&@#%")
+
+defaultArgsP :: Parser (Text, [(ParserPattern, Maybe ParserTerm)])
+defaultArgsP = do
+  var <- lx (varP <|> between (lx $ char '(') (char ')') 
+                       (lx (varP <|> operatorP)))
+  let defArgP = do 
+        p <- lx patternP
+        v <- (try (lx (char '=')) *> fmap Just termP) <|> return Nothing
+        return (p, v)
+  defArgs <- between (lx $ char '<') (char '>') 
+    (sepEndBy (lx defArgP) (lx $ char ','))
+  return (var, defArgs)
 
 partialLeftBinopP :: Parser ParserTerm
 partialLeftBinopP = do
@@ -117,7 +135,7 @@ partialLeftBinopP = do
 
 lambdaP :: Parser ParserTerm
 lambdaP = do
-  _ <- lx (string "fn")
+  _ <- lx (try $ string "fn")
   args <- lx (between (lx $ char '(') (char ')') (many1 patternP))
   _ <- lxs (string "->")
   t <- indented *> termP
