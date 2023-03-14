@@ -17,4 +17,4 @@ module chaining
   left([a]) = a
   left([a, op, b, ..xs]: List ⊆ Unchecked) = left([op(a, b), ..xs])
 
-  none(_) = error "Operator chaining is not supported"
+  none(_) = error("Operator chaining is not supported")

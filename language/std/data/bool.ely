@@ -10,10 +10,10 @@ def Bool
   dat False
 
 &&(True, True) = True
-&&(:Bool, :Bool) = False
+&&(_: Bool, _: Bool) = False
 
 ||(False, False) = False
-||(:Bool, :Bool) = True
+||(_: Bool, _: Bool) = True
 
 |(f: Bool → Bool, g: Bool → Bool) = fn(x) -> f(x) || g(x)
 &(f: Bool → Bool, g: Bool → Bool) = fn(x) -> f(x) && g(x)

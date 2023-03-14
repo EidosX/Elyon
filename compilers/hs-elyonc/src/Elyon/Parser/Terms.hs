@@ -90,7 +90,7 @@ varP = fmap T.pack $
 
 operatorP :: Parser Text
 operatorP = T.pack <$> 
-  many1 (satisfy isSymbol <|> oneOf "+-=<>?*$§&@#%")
+  many1 (satisfy isSymbol <|> oneOf "+-=<>?!*$§&@#%")
 
 identifierP :: forall p. Parser (PSimpleTerm p)
 identifierP = fmap PS_Var operatorP <|> do
