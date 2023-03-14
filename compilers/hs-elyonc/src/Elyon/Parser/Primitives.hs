@@ -5,13 +5,13 @@
 
 module Elyon.Parser.Primitives (
   intP, floatP, charP, interpolatedStringP,
-  InterpolatedStringContent (..)
+  InterpolatedStringContent (..), Sign (..)
 ) where
 
-import Elyon.Parser (Parser)
+import Elyon.Parser (Parser, lx)
 import Data.Text (Text)
 import Text.Parsec (many1, digit, char, between, 
-  noneOf, many, (<|>))
+  noneOf, many, try, (<|>))
 import Data.String (fromString)
 import Control.Applicative (liftA2)
 import Data.Functor (($>))
@@ -20,11 +20,21 @@ data InterpolatedStringContent e = ISCInterpolated e
                                  | ISCString Text
   deriving (Eq, Show)
 
-intP :: Parser Text
-intP = fromString <$> many1 digit
+data Sign = Plus | Minus
+  deriving (Eq, Show)
 
-floatP :: Parser (Text, Text)
-floatP = liftA2 (,) (intP <* char '.') intP
+natP :: Parser Text
+natP = fromString <$> many1 digit
+
+intP :: Parser (Sign, Text)
+intP = fmap (Plus,) natP <|> try (char '-' *> fmap (Minus,) natP)
+
+floatP :: Parser (Sign, Text, Text)
+floatP = do
+  (s, l) <- intP
+  _ <- char '.'
+  r <- natP
+  return (s, l, r)
 
 -- Parses e.g n or \n
 escapedCharP :: [Char] -> Parser Char
@@ -49,5 +59,5 @@ interpolatedStringP p = between (char '"') (char '"') $
   many (normal <|> interpolated)
   where normal = fmap (ISCString . fromString) $
           many1 (escapedCharP "\"{")
-        interpolated = fmap (ISCInterpolated) $
-          between (char '{') (char '}') p
+        interpolated = fmap ISCInterpolated $
+          between (lx $ char '{') (char '}') (lx p)
