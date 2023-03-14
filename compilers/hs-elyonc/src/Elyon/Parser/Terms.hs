@@ -21,6 +21,7 @@ import Data.List (intercalate)
 import Elyon.Parser (Parser, lx, lxs)
 import Elyon.Parser.Primitives (InterpolatedStringContent(..),
   Sign(..), intP, floatP, charP, interpolatedStringP)
+import Elyon.Parser.Lists (ListLiteralContent (..), listLiteralP)
 
 data ParserTerm = 
     PTVar Text
@@ -28,6 +29,7 @@ data ParserTerm =
   | PTFloat (Sign, Text, Text)
   | PTChar Char
   | PTString [InterpolatedStringContent ParserTerm]
+  | PTList [ListLiteralContent ParserTerm]
   | PTAppl ParserTerm [ParserTerm]
   | PTBinops [ParserTerm] -- [3, >, x, >=, 12]
   | PTPartialBinop (Maybe ParserTerm) ParserTerm (Maybe ParserTerm)
@@ -46,6 +48,7 @@ instance Show ParserTerm where
     where f (ISCString s') curr = curr <> unpack s' 
           f (ISCInterpolated t) curr =
               curr <> "{" <> show t <> "}"
+  show (PTList l) = show l
   show (PTAppl f args) = show f <> "(" <> 
     intercalate ", " (map show args) <> ")" 
   show (PTBinops binops) = unwords $ map show binops
@@ -67,6 +70,7 @@ termP = do
         <|> fmap PTInt intP
         <|> fmap PTChar charP
         <|> fmap PTString (interpolatedStringP termP)
+        <|> fmap PTList (listLiteralP termP)
         <|> fmap PTVar varP
         <|> fmap PTVar operatorP
         <|> partialLeftBinopP

@@ -15,7 +15,11 @@ import Text.Parsec.Indent (indented, checkIndent)
 
 data ListLiteralContent e = LLCElem e
                           | LLCSpread e
-  deriving (Show, Eq)
+  deriving (Eq)
+
+instance Show e => Show (ListLiteralContent e) where
+  show (LLCElem e) = show e
+  show (LLCSpread e) = ".." <> show e
 
 listManyLineP :: Parser begin -> Parser end -> Parser e -> Parser [e]
 listManyLineP begin end p = between begin' end' $
