@@ -19,12 +19,13 @@ import Data.List (intercalate)
 import Data.Char (isSymbol)
 import qualified Data.Text as T
 import Text.Parsec ((<|>), try, oneOf, letter, digit, many, char,
-  between, optionMaybe, sepEndBy, string, satisfy, many1)
+  between, optionMaybe, sepEndBy, string, satisfy, many1, sepBy1)
 import Text.Parsec.Indent (indented, checkIndent)
 import Control.Applicative (liftA2)
 
 data PSimpleTerm t = 
     PS_Var Text
+  | PS_ModuleName [Text] (PSimpleTerm t)
   | PS_Float (Sign, Text, Text)
   | PS_Int (Sign, Text)
   | PS_Char Char
@@ -62,7 +63,7 @@ argListP begin end p = do
 
 simpleTermP :: Parser p -> Parser (PSimpleTerm p)
 simpleTermP p = do
-  t1 <- fmap PS_Var varP
+  t1 <- identifierP
     <|> try (fmap PS_Float floatP)
     <|> fmap PS_Int intP
     <|> fmap PS_Char charP
@@ -90,6 +91,13 @@ varP = fmap T.pack $
 operatorP :: Parser Text
 operatorP = T.pack <$> 
   many1 (satisfy isSymbol <|> oneOf "+-=<>?*$§&@#%")
+
+identifierP :: forall p. Parser (PSimpleTerm p)
+identifierP = fmap PS_Var operatorP <|> do
+  l <- sepBy1 (varP <|> operatorP) (char '.')
+  let (mods, var) = (init l, PS_Var $ last l)
+  return $ if null mods then var else (PS_ModuleName mods var)
+  
 
 termP :: Parser PTerm
 termP = lambdaP
@@ -129,6 +137,8 @@ manyBinopsP = do
 
 instance Show e => Show (PSimpleTerm e) where
   show (PS_Var x) = T.unpack x
+  show (PS_ModuleName mods t) = 
+    intercalate "." (map T.unpack mods) <> "." <> show t
   show (PS_Float (Plus, l, r)) = T.unpack (l <> "." <> r)
   show (PS_Float (Minus, l, r)) = T.unpack ("-" <> l <> "." <> r)
   show (PS_Int (Plus, x)) = T.unpack x
