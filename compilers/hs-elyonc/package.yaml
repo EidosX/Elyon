@@ -12,6 +12,10 @@ dependencies:
   - base >= 4.7 && < 5
   - parsec
   - indents
+  - text
+
+default-extensions:
+  - OverloadedStrings
 
 ghc-options:
   - -Wall
