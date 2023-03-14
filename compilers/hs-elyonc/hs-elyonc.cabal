@@ -22,6 +22,7 @@ source-repository head
 library
   exposed-modules:
       Elyon.Parser
+      Elyon.Parser.Lists
       Elyon.Parser.Primitives
   other-modules:
       Paths_hs_elyonc
