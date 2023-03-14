@@ -19,10 +19,10 @@ trait Ord for (t: Type)
 ==(a, b) = False
 !=(a, b) = ¬(a == b)
 
-(<)<t: Ord>(a: t, b: t) = compare<t>(a, b) == Lesser
-(>)<t: Ord>(a: t, b: t) = compare<t>(a, b) == Greater
-(<=)<t: Ord>(a: t, b: t) = a == b || (<)<t>(a, b)
-(>=)<t: Ord>(a: t, b: t) = a == b || (>)<t>(a, b)
+<{t: Ord}(a: t, b: t) = compare{impl = t}(a, b) == Lesser
+>{t: Ord}(a: t, b: t) = compare{impl = t}(a, b) == Greater
+<={t: Ord}(a: t, b: t) = a == b || <{t}(a, b)
+>={t: Ord}(a: t, b: t) = a == b || >{t}(a, b)
 
 impl Binop for "Comparison"
   operators = [>, >=, <, <=, ==, !=]

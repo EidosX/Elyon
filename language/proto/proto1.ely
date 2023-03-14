@@ -10,9 +10,9 @@ func2(x) = x
 func3(:Str, :Str): Str
 func3(firstName: Str, lastName: Str) = "Hello {firstName} {lastName}!"
 
-func4<x: Int = 2>: Int = x
+func4{named x: Int = 2}: Int = x
 
-func5<m: Monad>(x: m ⊆ Int, y: m ⊆ Int) = do<m>
+func5{m: Monad}(x: m ⊆ Int, y: m ⊆ Int) = do{m}
   ret !x + !y
 
 func6 = log2(f(2) ▹ g ▹ h(-1))
@@ -21,15 +21,16 @@ func6 = log2(f(2) ▹ g ▹ h(-1))
       h x y = x * y
   use std.data.num.{log2}
 
-func7<m: Monad>(cx: m ⊆ Int) =
-  bind<impl = m>(fn(a) -> a * func4<x = 10>, cx)
+func7{m: Monad}(cx: m ⊆ Int) =
+  bind{impl = m}(fn(a) -> a * func4{x = 10}, cx)
 
-func8(l: List ⊆ Int) = 2 * !l
+func8(l: List ⊆ Int) = 2 * !l + !func7{List}(l)
 
 func9 = map(10 * _) ◃ filter(_ >= 2) ◃ [4, 1, -5, 3, 0, 2, 9]
 
-func10 = ∀(isEven, [0, 10, 8, 16])
+func10 = ∀(isEven)([0, 10, 8, 16])
 
 func11 = ∀(isEven)
 
-func12 = ∃(isEven, [1, 3, -5, 12, 27])
+func12 = ∃(isEven)([1, 3, -5, 12, 27])
+func12 = ∃(isEven)
