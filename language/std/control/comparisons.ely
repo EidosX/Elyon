@@ -4,8 +4,8 @@
 // https://opensource.org/licenses/MIT
 
 
-using std.control.binop.{Binop}
-using std.control.binop.chaining
+use std.control.binop.{Binop}
+use std.control.binop.chaining
 
 def Ordering
   dat Lesser

@@ -3,7 +3,7 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-using std.control.binop.{Binop}
+use std.control.binop.{Binop}
 
 def Bool
   dat True
@@ -21,12 +21,12 @@ def Bool
 impl Binop for "LogicalDisjunction"
   operators = [||, |,]
   chaining = chaining.right
-    using std.control.binop.chaining
+    use std.control.binop.chaining
 
 impl Binop for "LogicalConjunction"
   operators = [&&, &,]
   chaining = chaining.right
-    using std.control.binop.chaining
+    use std.control.binop.chaining
   higherThan = ["LogicalDisjunction"]
 
 ¬(True) = False

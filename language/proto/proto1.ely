@@ -16,10 +16,10 @@ func5<m: Monad>(x: m ⊆ Int, y: m ⊆ Int) = do<m>
   ret !x + !y
 
 func6 = log2(f(2) ▹ g ▹ h(-1))
-  where f = +
-        g = ↻
-        h x y = x * y
-  using std.data.num.{log2}
+  let f = +
+      g = ↻
+      h x y = x * y
+  use std.data.num.{log2}
 
 func7<m: Monad>(cx: m ⊆ Int) =
   bind<impl = m>(fn(a) -> a * func4<x = 10>, cx)

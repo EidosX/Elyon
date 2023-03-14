@@ -5,7 +5,8 @@
 
 module Elyon.Parser.Lists (
   listManyLineP,
-  listLiteralP
+  listLiteralP,
+  ListLiteralContent (..)
 ) where
 
 import Elyon.Parser (Parser, lx, lxs)
