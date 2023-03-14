@@ -4,8 +4,8 @@
 -- https://opensource.org/licenses/MIT
 
 module Elyon.Parser.Primitives (
-  intP, floatP, charP, interpolatedStringP,
-  InterpolatedStringContent (..), Sign (..)
+  intP, floatP, charP, templateStringP,
+  TemplateStringContent (..), Sign (..)
 ) where
 
 import Elyon.Parser (Parser, lx)
@@ -13,11 +13,10 @@ import Data.Text (Text)
 import Text.Parsec (many1, digit, char, between, 
   noneOf, many, try, (<|>))
 import Data.String (fromString)
-import Control.Applicative (liftA2)
 import Data.Functor (($>))
 
-data InterpolatedStringContent e = ISCInterpolated e
-                                 | ISCString Text
+data TemplateStringContent e = ISCInterpolated e
+                             | ISCString Text
   deriving (Eq, Show)
 
 data Sign = Plus | Minus
@@ -54,8 +53,8 @@ charP :: Parser Char
 charP = between (char '\'') (char '\'') $
   escapedCharP ['\'']
 
-interpolatedStringP :: Parser e -> Parser [InterpolatedStringContent e]
-interpolatedStringP p = between (char '"') (char '"') $
+templateStringP :: Parser e -> Parser [TemplateStringContent e]
+templateStringP p = between (char '"') (char '"') $
   many (normal <|> interpolated)
   where normal = fmap (ISCString . fromString) $
           many1 (escapedCharP "\"{")

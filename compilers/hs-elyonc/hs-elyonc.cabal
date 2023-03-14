@@ -23,6 +23,7 @@ library
   exposed-modules:
       Elyon.Parser
       Elyon.Parser.Lists
+      Elyon.Parser.Patterns
       Elyon.Parser.Primitives
       Elyon.Parser.Terms
   other-modules:
@@ -31,6 +32,7 @@ library
       src
   default-extensions:
       OverloadedStrings
+      TupleSections
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
@@ -47,6 +49,7 @@ executable hs-elyonc-exe
       app
   default-extensions:
       OverloadedStrings
+      TupleSections
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
@@ -65,6 +68,7 @@ test-suite hs-elyonc-test
       test
   default-extensions:
       OverloadedStrings
+      TupleSections
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5

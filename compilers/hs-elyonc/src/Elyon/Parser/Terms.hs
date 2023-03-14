@@ -4,157 +4,95 @@
 -- https://opensource.org/licenses/MIT
 
 module Elyon.Parser.Terms (
-  varP, operatorP, 
-  patternP,
-  termP
+  PSimpleTerm (..), PTerm (..), termP, simpleTermP
 ) where
 
-import Text.Parsec (many1, many, letter, digit, oneOf, 
-  satisfy, try, char, sepEndBy, between, string, (<|>))
-import Text.Parsec.Indent (indented)
-import Data.Char (isSymbol)
-import Data.Functor (($>))
-import Control.Applicative (liftA2)
-import Data.Text (Text, unpack)
-import Data.String (fromString)
-import Data.List (intercalate)
+import Elyon.Parser.Primitives (TemplateStringContent(..),
+  Sign(..), floatP, intP, charP, templateStringP)
 import Elyon.Parser (Parser, lx, lxs)
-import Elyon.Parser.Primitives (InterpolatedStringContent(..),
-  Sign(..), intP, floatP, charP, interpolatedStringP)
 import Elyon.Parser.Lists (ListLiteralContent (..), listLiteralP)
+import Elyon.Parser.Patterns (PPattern)
+import Data.Text (Text)
+import Data.List (intercalate)
+import qualified Data.Text as T
+import Text.Parsec ((<|>), try, oneOf, letter, digit, many, char,
+  between, optionMaybe, sepEndBy)
+import Text.Parsec.Indent (indented, checkIndent)
+import Control.Applicative (liftA2)
 
-data ParserTerm = 
-    PTVar Text
-  | PTInt (Sign, Text)
-  | PTFloat (Sign, Text, Text)
-  | PTChar Char
-  | PTString [InterpolatedStringContent ParserTerm]
-  | PTList [ListLiteralContent ParserTerm]
-  | PTDefaultArgs Text [(ParserPattern, Maybe ParserTerm)]
-  | PTAppl ParserTerm [ParserTerm]
-  | PTBinops [ParserTerm] -- [3, >, x, >=, 12]
-  | PTPartialBinop (Maybe ParserTerm) ParserTerm (Maybe ParserTerm)
-  | PTLambda [ParserPattern] ParserTerm
-  | PTParens ParserTerm
+data PSimpleTerm t = 
+    PS_Var Text
+  | PS_Float (Sign, Text, Text)
+  | PS_Int (Sign, Text)
+  | PS_Char Char
+  | PS_String [TemplateStringContent t]
+  | PS_List [ListLiteralContent t]
+  | PS_Parens t
+  | PS_Appl (PSimpleTerm t) [t]
+  | PS_DefaultArgAppl (PSimpleTerm t) [(Maybe Text, t)]
   deriving (Eq)
 
-instance Show ParserTerm where
-  show (PTVar x) = unpack x
-  show (PTInt (Plus, x)) = unpack x
-  show (PTInt (Minus, x)) = "-" <> unpack x
-  show (PTFloat (Plus, l, r)) = unpack l <> "." <> unpack r
-  show (PTFloat (Minus, l, r)) = "-" <> unpack l <> "." <> unpack r
-  show (PTChar c) = "'" <> [c] <> "'"
-  show (PTString s) = "\"" <> foldr f "" s <> "\""
-    where f (ISCString s') curr = curr <> unpack s' 
-          f (ISCInterpolated t) curr =
-              curr <> "{" <> show t <> "}"
-  show (PTList l) = show l
-  show (PTDefaultArgs s args) = 
-    unpack s <> "<" <> intercalate ", " (map f args) <> ">"
-    where f (p, Nothing) = show p
-          f (p, Just val) = show p <> " = " <> show val
-  show (PTAppl f args) = show f <> "(" <> 
-    intercalate ", " (map show args) <> ")" 
-  show (PTBinops binops) = unwords $ map show binops
-  show (PTPartialBinop l op r) =
-    f l <> " " <> show op <> " " <> f r
-    where f Nothing = "_"
-          f (Just x) = show x
-  show (PTLambda args t) = 
-    "fn(" <> intercalate ", " (map show args) <> ") -> " 
-    <> show t
-  show (PTParens t) = "(" <> show t <> ")"
+data PTerm = 
+    PT_Simple (PSimpleTerm PTerm)
+  | PT_Binops [PTerm] -- 3 > x >= 12 becomes [3, >, x, >=, 12]
+  | PT_PartialBinop (Maybe PTerm) PTerm (Maybe PTerm)
+  | PT_Lambda [PPattern PTerm] PTerm
+  deriving (Eq, Show)
 
-termP :: Parser ParserTerm
-termP = termWithBinopP
+argListP :: Parser begin -> Parser end -> Parser e -> Parser [e]
+argListP begin end p = do
+  _ <- try (lxs (pure ()) *> indented *> lxs begin)
+  l <- sepEndBy (indented *> lxs p) (indented *> lxs (char ','))
+  _ <- (indented <|> checkIndent) *> end
+  return l
 
-termNoApplP :: Parser ParserTerm
-termNoApplP = lambdaP
-          <|> try (fmap PTFloat floatP)
-          <|> fmap PTInt intP
-          <|> fmap PTChar charP
-          <|> fmap PTString (interpolatedStringP termP)
-          <|> fmap PTList (listLiteralP termP)
-          <|> try (fmap (uncurry PTDefaultArgs) defaultArgsP)
-          <|> fmap PTVar varP
-          <|> fmap PTVar operatorP
-          <|> partialLeftBinopP
-          <|> between (char '(') (char ')') (fmap PTParens termP)
+simpleTermP :: Parser p -> Parser (PSimpleTerm p)
+simpleTermP p = do
+  t1 <- fmap PS_Var varP
+    <|> try (fmap PS_Float floatP)
+    <|> fmap PS_Int intP
+    <|> fmap PS_Char charP
+    <|> fmap PS_String (templateStringP p)
+    <|> fmap PS_List (listLiteralP p)
+    <|> fmap PS_Parens (between (char '(') (char ')') p)
 
-termWithApplsP :: Parser ParserTerm
-termWithApplsP = liftA2 (foldl PTAppl) termNoApplP applsP
-  where applsP = lx (return ()) *> many (lx applP)
-        applP = between (lx $ char '(') (char ')') $
-          sepEndBy (lx termP) (lx $ char ',')
+  let defaultArgP = 
+        liftA2 (,) (try $ fmap Just(lx varP <* lx (char '='))) p
+        <|> fmap (Nothing,) p
+  defaultArgs <- optionMaybe $
+    argListP (char '{') (char '}') defaultArgP
+  let t2 = foldl PS_DefaultArgAppl t1 defaultArgs
 
-termWithBinopP :: Parser ParserTerm
-termWithBinopP = do
-  lTerm <- termWithApplsP
-  let partialBinopP = do
-        lx (return ()) 
-        op <- lx (fmap PTVar operatorP) 
-        _ <- char '_'
-        return $ PTPartialBinop (Just lTerm) op Nothing
+  args <- many (argListP (char '(') (char ')') p)
+  let t3 = foldl PS_Appl t2 args
+
+  return t3
   
-  let binopsP = fmap (PTBinops . (lTerm :) . concat) (many1 binopP)
-      binopP = do
-        lxs (return ())
-        op <- indented *> lxs (fmap PTVar operatorP)
-        rTerm <- indented *> termWithApplsP
-        return [op, rTerm]
-  
-  try partialBinopP <|> try binopsP <|> return lTerm
 
 varP :: Parser Text
-varP = fromString <$> 
+varP = fmap T.pack $ 
   liftA2 (:) letter (many (letter <|> digit <|> oneOf "_"))
 
-operatorP :: Parser Text
-operatorP = fromString <$> 
-  many1 (satisfy isSymbol <|> oneOf "+-=<>?*$§&@#%")
-
-defaultArgsP :: Parser (Text, [(ParserPattern, Maybe ParserTerm)])
-defaultArgsP = do
-  var <- lx (varP <|> between (lx $ char '(') (char ')') 
-                       (lx (varP <|> operatorP)))
-  let defArgP = do 
-        p <- lx patternP
-        v <- (try (lx (char '=')) *> fmap Just termP) <|> return Nothing
-        return (p, v)
-  defArgs <- between (lx $ char '<') (char '>') 
-    (sepEndBy (lx defArgP) (lx $ char ','))
-  return (var, defArgs)
-
-partialLeftBinopP :: Parser ParserTerm
-partialLeftBinopP = do
-  _ <- lx $ char '_'
-  op <- lx (fmap PTVar operatorP)
-  r <- (char '_' $> Nothing) <|> fmap Just termP
-  return $ PTPartialBinop Nothing op r
-
-lambdaP :: Parser ParserTerm
-lambdaP = do
-  _ <- lx (try $ string "fn")
-  args <- lx (between (lx $ char '(') (char ')') (many1 patternP))
-  _ <- lxs (string "->")
-  t <- indented *> termP
-  return $ PTLambda args t
+termP :: Parser PTerm
+termP = fmap PT_Simple (simpleTermP termP)
 
 
-data ParserPattern = 
-    PPMatch ParserTerm
-  | PPWildcard
-  | PPCond ParserPattern ParserTerm
-  deriving (Eq)
 
-instance Show ParserPattern where
-  show (PPMatch t) = show t
-  show (PPWildcard) = "_"
-  show (PPCond p t) = show p <> ": " <> show t
-
-patternP :: Parser ParserPattern
-patternP = do
-  left <- (char '_' $> PPWildcard) <|> (fmap PPMatch termP)
-  let cond = lx (return ()) *> lx (char ':') *> termP
-  try (fmap (PPCond left) cond) <|> return left
+instance Show e => Show (PSimpleTerm e) where
+  show (PS_Var x) = T.unpack x
+  show (PS_Float (Plus, l, r)) = T.unpack (l <> "." <> r)
+  show (PS_Float (Minus, l, r)) = T.unpack ("-" <> l <> "." <> r)
+  show (PS_Int (Plus, x)) = T.unpack x
+  show (PS_Int (Minus, x)) = T.unpack ("-" <> x)
+  show (PS_Char c) = "'" <> [c] <> "'"
+  show (PS_String ss) = "\"" <> concat (map f ss) <> "\""
+    where f (ISCInterpolated x) = "{" <> show x <> "}"
+          f (ISCString s) = T.unpack s
+  show (PS_List l) = "[" <> intercalate ", " (map show l) <> "]"
+  show (PS_Parens x) = "(" <> show x <> ")"
+  show (PS_Appl l args) = 
+    show l <> "(" <> intercalate ", " (map show args) <> ")"
+  show (PS_DefaultArgAppl t args) = 
+    show t <> "{" <> intercalate ", " (map f args) <> "}"
+    where f (Nothing, v) = show v
+          f (Just name, v) = T.unpack name <> " = " <> show v

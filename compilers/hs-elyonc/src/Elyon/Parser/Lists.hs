@@ -13,13 +13,13 @@ import Elyon.Parser (Parser, lx, lxs)
 import Text.Parsec (sepEndBy, char, between, (<|>), string)
 import Text.Parsec.Indent (indented, checkIndent)
 
-data ListLiteralContent e = LLCElem e
-                          | LLCSpread e
+data ListLiteralContent e = LLC_Elem e
+                          | LLC_Spread e
   deriving (Eq)
 
 instance Show e => Show (ListLiteralContent e) where
-  show (LLCElem e) = show e
-  show (LLCSpread e) = ".." <> show e
+  show (LLC_Elem e) = show e
+  show (LLC_Spread e) = ".." <> show e
 
 listManyLineP :: Parser begin -> Parser end -> Parser e -> Parser [e]
 listManyLineP begin end p = between begin' end' $
@@ -29,6 +29,6 @@ listManyLineP begin end p = between begin' end' $
 
 listLiteralP :: Parser e -> Parser [ListLiteralContent e]
 listLiteralP p = listManyLineP (char '[') (char ']') p'
-  where p' = fmap LLCSpread (lx (string "..") *> p)
-             <|> fmap LLCElem p
+  where p' = fmap LLC_Spread (lx (string "..") *> p)
+             <|> fmap LLC_Elem p
 
