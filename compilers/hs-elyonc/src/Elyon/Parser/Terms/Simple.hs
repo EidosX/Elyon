@@ -41,13 +41,13 @@ argListP begin end p = do
 
 simpleTermP :: Parser p -> Parser (PSimpleTerm p)
 simpleTermP p = do
-  t1 <- identifierP
-    <|> try (fmap PS_Float floatP)
+  t1 <- try (fmap PS_Float floatP)
     <|> fmap PS_Int intP
     <|> fmap PS_Char charP
     <|> fmap PS_String (templateStringP p)
     <|> fmap PS_List (listLiteralP p)
     <|> fmap PS_Parens (between (char '(') (char ')') p)
+    <|> identifierP
 
   let defaultArgP = 
         liftA2 (,) (try $ fmap Just(lx varP <* lx (char '='))) p
