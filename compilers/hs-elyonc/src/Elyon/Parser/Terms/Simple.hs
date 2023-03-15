@@ -22,7 +22,7 @@ import Text.Parsec.Indent (indented, checkIndent)
 import Control.Applicative (liftA2)
 
 reservedOperators :: [Text]
-reservedOperators = ["->", "=", "=!", "!", ":", "_", "."]
+reservedOperators = ["->", "=", "=!", "!", ":", "_", ".", "//"]
 
 reservedKeywords :: [Text]
 reservedKeywords = ["use", "mod", "trait", 

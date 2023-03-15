@@ -8,8 +8,10 @@ module Elyon.Parser (
 ) where
 
 import Text.Parsec.Indent (IndentParser, runIndentParser)
-import Text.Parsec (many, space, endOfLine, (<|>), ParseError)
+import Text.Parsec (many, space, endOfLine, try, string,
+  (<|>), manyTill, anyChar, ParseError)
 import Data.Text (Text)
+import Data.Functor (($>))
 
 type Parser a = IndentParser Text () a
 
@@ -20,4 +22,8 @@ lx :: Parser a -> Parser a
 lx p = p <* many space
 
 lxs :: Parser a -> Parser a
-lxs p = p <* many (space <|> endOfLine)
+lxs p = p <* many (space <|> endOfLine <|> (commentP $> ' '))
+
+commentP :: Parser String
+commentP = try (string "//") *>
+  manyTill anyChar (try endOfLine)

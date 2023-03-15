@@ -17,6 +17,7 @@ dependencies:
 default-extensions:
   - OverloadedStrings
   - TupleSections
+  - RankNTypes
 
 ghc-options:
   - -Wall
