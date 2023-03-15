@@ -22,12 +22,14 @@ source-repository head
 library
   exposed-modules:
       Elyon.Parser
+      Elyon.Parser.Assignments
       Elyon.Parser.Lists
       Elyon.Parser.Patterns
       Elyon.Parser.Primitives
       Elyon.Parser.Terms
       Elyon.Parser.Terms.DoNotation
       Elyon.Parser.Terms.Simple
+      Elyon.Parser.UseStatements
   other-modules:
       Paths_hs_elyonc
   hs-source-dirs:
