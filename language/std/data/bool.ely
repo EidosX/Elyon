@@ -3,7 +3,7 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-use std.control.binop.{Binop}
+use std.control.binop{Binop}
 
 def Bool
   dat True

@@ -26,8 +26,8 @@ reservedOperators = ["->", "=", "=!", "!", ":", "_", ".", "//"]
 
 reservedKeywords :: [Text]
 reservedKeywords = ["use", "mod", "trait", 
-  "impl", "def", "dat", "let", "named",
-  "for", "match", "if", "elif", "else", "do", "fn", "ret"
+  "def", "dat", "let", "named",
+  "match", "if", "elif", "else", "do", "fn", "ret"
   ]
 
 data PSimpleTerm t = 
@@ -38,6 +38,7 @@ data PSimpleTerm t =
   | PS_Char Char
   | PS_String [TemplateStringContent t]
   | PS_List [ListLiteralContent t]
+  | PS_BangBind (PSimpleTerm t)
   | PS_Parens t
   | PS_Appl (PSimpleTerm t) [t]
   | PS_DefaultArgAppl (PSimpleTerm t) [(Maybe Text, t)]
@@ -56,6 +57,7 @@ simpleTermP p = do
     <|> fmap PS_Char charP
     <|> fmap PS_String (templateStringP p)
     <|> fmap PS_List (listLiteralP p)
+    <|> fmap PS_BangBind (bangBindP p)
     <|> fmap PS_Parens (between (char '(') (char ')') p)
     <|> identifierP
 
@@ -90,7 +92,10 @@ identifierP = fmap PS_Var operatorP <|> do
   l <- sepBy1 (varP <|> operatorP) (char '.')
   let (mods, var) = (init l, PS_Var $ last l)
   return $ if null mods then var else (PS_ModuleName mods var)
-  
+
+bangBindP :: Parser e -> Parser (PSimpleTerm e)
+bangBindP p = char '!' *> simpleTermP p
+
 
 instance Show e => Show (PSimpleTerm e) where
   show (PS_Var x) = T.unpack x
@@ -105,6 +110,7 @@ instance Show e => Show (PSimpleTerm e) where
     where f (ISCInterpolated x) = "{" <> show x <> "}"
           f (ISCString s) = T.unpack s
   show (PS_List l) = "[" <> intercalate ", " (map show l) <> "]"
+  show (PS_BangBind x) = '!' : show x
   show (PS_Parens x) = "(" <> show x <> ")"
   show (PS_Appl l args) = 
     show l <> "(" <> intercalate ", " (map show args) <> ")"

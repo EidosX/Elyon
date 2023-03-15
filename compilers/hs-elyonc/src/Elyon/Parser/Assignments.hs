@@ -26,7 +26,7 @@ data PAssignment = PA_FuncAssignment {
   paa_defaultArgs :: [(DefaultArgNamed, PTPattern, Maybe PTerm)],
   paa_args :: [PTPattern],
   paa_retPattern :: Maybe PTPattern,
-  paa_body :: PTerm,
+  paa_body :: Maybe PTerm,
   paa_letBindings :: [PAssignment],
   paa_useStmts :: [PUseStatement]
 } deriving (Eq)
@@ -44,8 +44,8 @@ assignmentP = withPos $ do
   retPattern <- optionMaybe . lxs $
     (indented *> lxs (char ':') *> indented *> (lxs termPatternP))
 
-  _ <- indented *> lxs (char '=')
-  body <- indented *> termP
+  body <- optionMaybe
+    (indented *> try (lxs (char '=')) *> indented *> termP)
 
   let letBindingsP = do
         _ <- try (lxs (pure ()) *> indented *> lxs (string "let "))
@@ -81,13 +81,15 @@ instance Show PAssignment where
           funcName defArgs args retPattern 
           body letBindings useStmts) =
     T.unpack funcName <> defArgs' <> args' <> retPatt' 
-      <> " = " <> show body <> let' <> use'
+      <> body' <> let' <> use'
     where defArgs' = if null defArgs then "" else 
             "{" <> intercalate ", " (map show defArgs) <> "}"
           args' = if null args then ""  else 
             "(" <> intercalate ", " (map show args) <> ")"
           retPatt' = case retPattern of Nothing -> ""
                                         Just s -> ": " <> show s
+          body' = case body of Nothing -> ""
+                               Just b  -> " = " <> show b
           let' = if null letBindings then ""
                  else " let " <> show letBindings
           use' = if null useStmts then ""

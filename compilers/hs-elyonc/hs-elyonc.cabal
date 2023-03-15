@@ -23,6 +23,7 @@ library
   exposed-modules:
       Elyon.Parser
       Elyon.Parser.Assignments
+      Elyon.Parser.File
       Elyon.Parser.Lists
       Elyon.Parser.Patterns
       Elyon.Parser.Primitives
