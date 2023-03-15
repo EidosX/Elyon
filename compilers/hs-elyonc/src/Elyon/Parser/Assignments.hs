@@ -14,42 +14,42 @@ import Data.Text (Text)
 import Data.Functor (($>))
 import Data.List (intercalate)
 import qualified Data.Text as T
-import Elyon.Parser.Terms (PTPattern, PTerm, termPatternP, termP)
 import Elyon.Parser.Terms.Simple (varP, operatorP, argListP)
 import Elyon.Parser.UseStatements (useStmtP, PUseStatement)
 
 data DefaultArgNamed = DAN_Named | DAN_Positional
   deriving (Eq, Show)
 
-data PAssignment = PA_FuncAssignment {
+data PAssignment patt term = PA_FuncAssignment {
   paa_funcName :: Text,
-  paa_defaultArgs :: [(DefaultArgNamed, PTPattern, Maybe PTerm)],
-  paa_args :: [PTPattern],
-  paa_retPattern :: Maybe PTPattern,
-  paa_body :: Maybe PTerm,
-  paa_letBindings :: [PAssignment],
+  paa_defaultArgs :: [(DefaultArgNamed, patt, Maybe term)],
+  paa_args :: [patt],
+  paa_retPattern :: Maybe patt,
+  paa_body :: Maybe term,
+  paa_letBindings :: [(PAssignment patt term)],
   paa_useStmts :: [PUseStatement]
 } deriving (Eq)
 
-assignmentP :: Parser PAssignment
-assignmentP = withPos $ do
+assignmentP :: Parser patt -> Parser term 
+            -> Parser (PAssignment patt term)
+assignmentP pattP termP = withPos $ do
   funcName <- lx (varP <|> operatorP)
 
   defaultArgs <- fmap concat . optionMaybe . lxs $ 
-    argListP (char '{') (char '}') defaultArgP
+    argListP (char '{') (char '}') (defaultArgP pattP termP)
 
   args <- fmap concat . optionMaybe . lxs $ 
-    argListP (char '(') (char ')') termPatternP
+    argListP (char '(') (char ')') pattP
 
   retPattern <- optionMaybe . lxs $
-    (indented *> lxs (char ':') *> indented *> (lxs termPatternP))
+    (indented *> lxs (char ':') *> indented *> (lxs pattP))
 
   body <- optionMaybe
     (indented *> try (lxs (char '=')) *> indented *> termP)
 
   let letBindingsP = do
         _ <- try (lxs (pure ()) *> indented *> lxs (string "let "))
-        indented *> block (lxs assignmentP)
+        indented *> block (lxs (assignmentP pattP termP))
   letBindings <- letBindingsP <|> return []
 
   let useStmtsP = do
@@ -67,16 +67,17 @@ assignmentP = withPos $ do
     paa_useStmts = useStmts
   }
 
-defaultArgP :: Parser (DefaultArgNamed, PTPattern, Maybe PTerm)
-defaultArgP = do
+defaultArgP :: Parser patt -> Parser term 
+            -> Parser (DefaultArgNamed, patt, Maybe term)
+defaultArgP pattP termP = do
   dan <- try (lx $ string "named " $> DAN_Named) 
          <|> return DAN_Positional
-  patt <- termPatternP
+  patt <- pattP
   term <- optionMaybe (try (lx (pure ()) *> 
                        lx (string "=") *> termP))
   return (dan, patt, term)
 
-instance Show PAssignment where
+instance (Show patt, Show term) => Show (PAssignment patt term) where
   show (PA_FuncAssignment 
           funcName defArgs args retPattern 
           body letBindings useStmts) =
