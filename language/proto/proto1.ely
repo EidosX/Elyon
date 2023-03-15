@@ -12,8 +12,8 @@ func3(firstName, lastName) = "Hello {firstName} {lastName}!"
 
 func4{named x: Int = 2}: Int = x
 
-// func5{m: Monad}(x: m ⊆ Int, y: m ⊆ Int) = do{m}
-//   ret !x + !y
+func5{m: Monad}(x: m ⊆ Int, y: m ⊆ Int) = do{m}
+  ret !x + !y
 
 func6 = log2(f(2) ▹ g ▹ h(-1))
   let f = +

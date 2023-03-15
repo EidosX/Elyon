@@ -9,6 +9,7 @@ module Elyon.Parser.Terms (
 ) where
 
 import Elyon.Parser (Parser, lx, lxs)
+import Elyon.Parser.IfElse (PIfElse, ifElseP)
 import Elyon.Parser.Patterns (PPattern (..), patternP)
 import Elyon.Parser.Terms.Simple (simpleTermP, PSimpleTerm (..),
   operatorP, argListP)
@@ -17,14 +18,13 @@ import Elyon.Parser.Terms.DoNotation (DoNotationBody (..),
 import Data.Functor (($>))
 import Data.List (intercalate)
 import Control.Applicative (liftA2)
-import Text.Parsec ((<|>), try, char, string, many1, between,
-  lookAhead)
+import Text.Parsec ((<|>), try, char, string, many1, between)
 import Text.Parsec.Indent (indented, withPos, withBlock)
 
 data PTerm = 
     PT_Simple (PSimpleTerm PTerm)
   | PT_Match PTerm [(PTPattern, PTerm)]
-  | PT_IfElse PTerm PTerm PTerm -- Condition Then Else
+  | PT_IfElse [PIfElse PTerm PTerm] -- Condition Then Else
   | PT_DoNotation (DoNotationBody PTPattern PTerm)
   | PT_Lambda [PTPattern] PTerm
   | PT_Binops [PSimpleTerm PTerm] -- 3 > x >= 12 becomes [3, >, x, >=, 12]
@@ -45,7 +45,7 @@ termPatternP = fmap PTPattern $
 termP :: Parser PTerm
 termP = lambdaP
     <|> matchExprP
-    <|> ifElseP
+    <|> fmap PT_IfElse (ifElseP termP termP)
     <|> fmap PT_DoNotation (doNotationP termPatternP termP)
     <|> partialLeftBinopP
     <|> manyBinopsP
@@ -59,17 +59,6 @@ matchExprP = withBlock PT_Match (lxs matchTermP) casesP
         casesP = withPos $ lxs (liftA2 (,) 
                   (lx termPatternP <* lxs (string "->")) 
                   (indented *> termP))
-
-
-ifElseP :: Parser PTerm
-ifElseP = do
-  if' <- try (lx (string "if")) 
-         *> lxs (between (lx $ char '(') (char ')') (lx termP))
-  then' <- indented *> lxs termP
-  let elifP = try (lookAhead (string "elif")) 
-              *> string "el" *> ifElseP
-      elseP = lxs (string "else") *> indented *> termP
-  fmap (PT_IfElse if' then') (indented *> (elifP <|> elseP))
 
 lambdaP :: Parser PTerm
 lambdaP = try (string "fn") *> do
@@ -105,8 +94,7 @@ manyBinopsP = do
 instance Show PTerm where
   show (PT_Simple x) = show x
   show (PT_Match t l) = "match (" <> show t <> ")" <> show l
-  show (PT_IfElse if' then' else') = "if (" <> show if' <> ") "
-    <> show then' <> " else " <> show else'
+  show (PT_IfElse l) = intercalate " " (map show l)
   show (PT_DoNotation doBody) = show doBody
   show (PT_Binops l) = intercalate " " $ map show l
   show (PT_PartialBinop l op r) = unwords [f l, show op, f r]

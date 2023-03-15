@@ -11,7 +11,7 @@ import Elyon.Parser (Parser, lxs)
 import Elyon.Parser.Terms (PTerm, PTPattern, termP, termPatternP)
 import Elyon.Parser.Assignments (PAssignment, assignmentP)
 import Text.Parsec.Indent (topLevel)
-import Text.Parsec (many)
+import Text.Parsec (many, char)
 
 data PFileContent = PFA_Assignment (PAssignment PTPattern PTerm)
   deriving (Show, Eq)
@@ -20,4 +20,5 @@ fileP :: Parser [PFileContent]
 fileP = lxs (pure ()) *> many (topLevel *> lxs fileContentP)
 
 fileContentP :: Parser PFileContent
-fileContentP = fmap PFA_Assignment (assignmentP termPatternP termP)
+fileContentP = fmap PFA_Assignment 
+  (assignmentP termPatternP termP (char '='))

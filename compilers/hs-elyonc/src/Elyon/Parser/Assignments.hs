@@ -4,7 +4,7 @@
 -- https://opensource.org/licenses/MIT
 
 module Elyon.Parser.Assignments (
-  PAssignment (..), assignmentP
+  PAssignment (..), assignmentP, assignmentWithBodyP
 ) where
 
 import Elyon.Parser (Parser, lx, lxs)
@@ -14,6 +14,7 @@ import Data.Text (Text)
 import Data.Functor (($>))
 import Data.List (intercalate)
 import qualified Data.Text as T
+import Control.Monad (when)
 import Elyon.Parser.Terms.Simple (varP, operatorP, argListP)
 import Elyon.Parser.UseStatements (useStmtP, PUseStatement)
 
@@ -30,9 +31,16 @@ data PAssignment patt term = PA_FuncAssignment {
   paa_useStmts :: [PUseStatement]
 } deriving (Eq)
 
-assignmentP :: Parser patt -> Parser term 
+assignmentWithBodyP :: Parser patt -> Parser term -> Parser equalSign
             -> Parser (PAssignment patt term)
-assignmentP pattP termP = withPos $ do
+assignmentWithBodyP pattP termP equalSignP = do
+  ass <- assignmentP pattP termP equalSignP
+  when (null $ paa_body ass) $ fail "No assignment body"
+  return ass
+
+assignmentP :: Parser patt -> Parser term -> Parser equalSign
+            -> Parser (PAssignment patt term)
+assignmentP pattP termP equalSignP = withPos $ do
   funcName <- lx (varP <|> operatorP)
 
   defaultArgs <- fmap concat . optionMaybe . lxs $ 
@@ -45,11 +53,11 @@ assignmentP pattP termP = withPos $ do
     (indented *> lxs (char ':') *> indented *> (lxs pattP))
 
   body <- optionMaybe
-    (indented *> try (lxs (char '=')) *> indented *> termP)
+    (indented *> try (lxs equalSignP) *> indented *> termP)
 
   let letBindingsP = do
         _ <- try (lxs (pure ()) *> indented *> lxs (string "let "))
-        indented *> block (lxs (assignmentP pattP termP))
+        indented *> block (lxs (assignmentP pattP termP equalSignP))
   letBindings <- letBindingsP <|> return []
 
   let useStmtsP = do

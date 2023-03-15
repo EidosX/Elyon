@@ -24,6 +24,7 @@ library
       Elyon.Parser
       Elyon.Parser.Assignments
       Elyon.Parser.File
+      Elyon.Parser.IfElse
       Elyon.Parser.Lists
       Elyon.Parser.Patterns
       Elyon.Parser.Primitives
