@@ -4,17 +4,6 @@
 // https://opensource.org/licenses/MIT
 
 trait Binop for (group: Str)
-  operators: List ⊆ Any && notEmpty
-  chaining([a, ..xs: len ▹ isEven]: List ⊆ Unchecked): Unchecked = chaining.none
+  operators: List
+  associativity: OneOf(["right", "left", "none"]) = "none"
   higherThan: List ⊆ Binop = []
-
-module chaining
-  // Right associativity
-  right([a]) = a
-  right([a, op, ..xs: notEmpty]: List ⊆ Unchecked) = op(a, right(xs))
-  
-  // Left associativity
-  left([a]) = a
-  left([a, op, b, ..xs]: List ⊆ Unchecked) = left([op(a, b), ..xs])
-
-  none(_) = error("Operator chaining is not supported")

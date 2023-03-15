@@ -5,7 +5,6 @@
 
 
 use std.control.binop.{Binop}
-use std.control.binop.chaining
 
 def Ordering
   dat Lesser
@@ -26,16 +25,14 @@ trait Ord for (t: Type)
 
 impl Binop for "Comparison"
   operators = [>, >=, <, <=, ==, !=]
-  chaining([a]) = True
-  chaining([a, op, b, ..xs]) = op(a, b) && chaining([b, ..xs])
   higherThan = ["LogicalConjunction"]
 
 impl Binop for "Addition"
   operators = [+, -]
-  chaining = chaining.left
+  associativity = "left"
   higherThan = ["Comparison"]
 
 impl Binop for "Multiplication"
   operator = [*, /]
-  chaining = chaining.left
+  associativity = "left"
   higherThan = ["Addition"]

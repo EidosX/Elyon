@@ -39,11 +39,6 @@
     "body": ["match($1)", "\t$0"],
     "description": "Match expression"
   },
-  "Type Arrow (→)": {
-    "prefix": ["arr"],
-    "body": ["→"],
-    "description": "Function type arrow operator"
-  },
   "All (∀)": {
     "prefix": ["all"],
     "body": ["∀"],

@@ -15,18 +15,16 @@ def Bool
 ||(False, False) = False
 ||(_: Bool, _: Bool) = True
 
-|(f: Bool → Bool, g: Bool → Bool) = fn(x) -> f(x) || g(x)
-&(f: Bool → Bool, g: Bool → Bool) = fn(x) -> f(x) && g(x)
+|(f: Fn([Bool], Bool), g: Fn([Bool], Bool)) = fn(x) -> f(x) || g(x)
+&(f: Fn([Bool], Bool), g: Fn([Bool], Bool)) = fn(x) -> f(x) && g(x)
 
 impl Binop for "LogicalDisjunction"
   operators = [||, |,]
-  chaining = chaining.right
-    use std.control.binop.chaining
+  associativity = "right"
 
 impl Binop for "LogicalConjunction"
   operators = [&&, &,]
-  chaining = chaining.right
-    use std.control.binop.chaining
+  associativity = "right"
   higherThan = ["LogicalDisjunction"]
 
 ¬(True) = False
