@@ -25,7 +25,7 @@ reservedOperators :: [Text]
 reservedOperators = ["->", "=", "=!", "!", ":", "_", "."]
 
 reservedKeywords :: [Text]
-reservedKeywords = ["use", "module", "trait", 
+reservedKeywords = ["use", "mod", "trait", 
   "impl", "def", "dat", "let", "named",
   "for", "match", "if", "elif", "else", "do", "fn", "ret"
   ]
