@@ -26,6 +26,10 @@ trait Ord for (t: Type)
 impl Binop for "Comparison"
   operators = [>, >=, <, <=, ==, !=]
   higherThan = ["LogicalConjunction"]
+  chaining([_]) = True
+  chaining([a, op: Fn([Exact a, Exact b] -> Bool), b, ..xs]) =
+    op(a, b) && chaining([b, ..xs])
+  chaining(_) = error("Invalid operator chaining values")
 
 impl Binop for "Addition"
   operators = [+, -]

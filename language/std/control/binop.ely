@@ -5,5 +5,8 @@
 
 trait Binop for (group: Str)
   operators: List
-  associativity: OneOf(["right", "left", "none"]) = "none"
+  associativity: OneOf(["right", "left", "chaining"]) = "chaining"
   higherThan: List ⊆ Binop = []
+  chaining(_: Any): Any =
+    error(["Operator Chaining cannot be used with '{group}'",
+           "Consider adding parentheses"])
