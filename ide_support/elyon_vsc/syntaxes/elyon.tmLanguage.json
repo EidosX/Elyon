@@ -28,7 +28,7 @@
         },
         {
           "name": "storage.modifier.elyon",
-          "match": "\\b(binopgroup|use|module|trait|impl|def|dat|let|named)\\b"
+          "match": "\\b(use|module|trait|impl|def|dat|let|named)\\b"
         }
       ]
     },

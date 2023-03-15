@@ -4,7 +4,7 @@
 -- https://opensource.org/licenses/MIT
 
 module Elyon.Parser.Terms.Simple (
-  PSimpleTerm (..), simpleTermP, operatorP, argListP
+  PSimpleTerm (..), simpleTermP, varP, operatorP, argListP
 ) where
 
 import Elyon.Parser.Primitives (TemplateStringContent(..),
@@ -14,11 +14,21 @@ import Elyon.Parser.Lists (ListLiteralContent (..), listLiteralP)
 import Data.Text (Text)
 import Data.List (intercalate)
 import Data.Char (isSymbol)
+import Control.Monad (when)
 import qualified Data.Text as T
 import Text.Parsec ((<|>), try, oneOf, letter, digit, many, char,
   between, optionMaybe, sepEndBy, satisfy, many1, sepBy1)
 import Text.Parsec.Indent (indented, checkIndent)
 import Control.Applicative (liftA2)
+
+reservedOperators :: [Text]
+reservedOperators = ["->", "=", "=!", "!", ":", "_", "."]
+
+reservedKeywords :: [Text]
+reservedKeywords = ["use", "module", "trait", 
+  "impl", "def", "dat", "let", "named",
+  "for", "match", "if", "elif", "else", "do", "fn", "ret"
+  ]
 
 data PSimpleTerm t = 
     PS_Var Text
@@ -62,12 +72,18 @@ simpleTermP p = do
   return t3
 
 varP :: Parser Text
-varP = fmap T.pack $ 
-  liftA2 (:) letter (many (letter <|> digit <|> oneOf "_"))
+varP = try $ do 
+  var <- fmap T.pack $ 
+    liftA2 (:) letter (many (letter <|> digit <|> oneOf "_"))
+  when (var `elem` reservedKeywords) (fail "Reserved Keyword")
+  return var
 
 operatorP :: Parser Text
-operatorP = T.pack <$> 
-  many1 (satisfy isSymbol <|> oneOf "+-=<>?!*$§&@#%/\\")
+operatorP = try $ do
+  op <- fmap T.pack $ 
+    many1 (satisfy isSymbol <|> oneOf "+-=<>?!*:.$§&@#%/\\")
+  when (op `elem` reservedOperators) (fail "Reserved Operator")
+  return op
 
 identifierP :: forall p. Parser (PSimpleTerm p)
 identifierP = fmap PS_Var operatorP <|> do
