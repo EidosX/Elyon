@@ -84,8 +84,9 @@ manyBinopsP = do
 
   let binopsP = fmap (PT_Binops . (t1:) . concat) (many1 bp)
       bp = do
-        op <- try (lxs (pure ()) *> fmap PS_Var (lx operatorP))
-        r <- simpleTermP termP
+        op <- try (lxs (pure ()) *> indented *>
+                   fmap PS_Var (lxs operatorP))
+        r <- indented *> simpleTermP termP
         return [op, r]
 
   try partialRightBinopP <|> binopsP <|> return (PT_Simple t1)

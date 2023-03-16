@@ -57,9 +57,9 @@ simpleTermP p = do
     <|> fmap PS_Char charP
     <|> fmap PS_String (templateStringP p)
     <|> fmap PS_List (listLiteralP p)
-    <|> fmap PS_BangBind (bangBindP p)
     <|> fmap PS_Parens (between (char '(') (char ')') p)
     <|> identifierP
+    <|> fmap PS_BangBind (bangBindP p)
 
   let defaultArgP = 
         liftA2 (,) (try $ fmap Just(lx varP <* lx (char '='))) p

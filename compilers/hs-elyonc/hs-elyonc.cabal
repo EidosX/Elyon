@@ -31,6 +31,7 @@ library
       Elyon.Parser.Terms
       Elyon.Parser.Terms.DoNotation
       Elyon.Parser.Terms.Simple
+      Elyon.Parser.Traits
       Elyon.Parser.UseStatements
   other-modules:
       Paths_hs_elyonc

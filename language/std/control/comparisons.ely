@@ -4,16 +4,6 @@
 // https://opensource.org/licenses/MIT
 
 
-use std.control.binop{Binop}
-
-def Ordering
-  dat Lesser
-  dat Equal
-  dat Greater
-
-trait Ord for (t: Type)
-  compare(a: t, b: t): Ordering
-
 ==(a, a) = True
 ==(a, b) = False
 !=(a, b) = ¬(a == b)
@@ -27,7 +17,7 @@ impl Binop for "Comparison"
   operators = [>, >=, <, <=, ==, !=]
   higherThan = ["LogicalConjunction"]
   chaining([_]) = True
-  chaining([a, op: Fn([Exact a, Exact b] -> Bool), b, ..xs]) =
+  chaining([a, op: Fn([Exact(a), Exact(b)], Bool), b, ..xs]) = 
     op(a, b) && chaining([b, ..xs])
   chaining(_) = error("Invalid operator chaining values")
 
