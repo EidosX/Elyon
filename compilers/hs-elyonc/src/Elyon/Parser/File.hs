@@ -14,7 +14,7 @@ import Elyon.Parser.Traits (PTraitDecl, traitP, implP)
 import Elyon.Parser.UseStatements (PUseStatement, useStmtP)
 import Elyon.Parser.Dat (PDef, datP, defP)
 import Text.Parsec.Indent (topLevel)
-import Text.Parsec (many, char, (<|>), string)
+import Text.Parsec (many, char, (<|>), string, eof)
 
 data PFileContent =
     PFA_Assignment (PAssignment PTPattern PTerm)
@@ -26,7 +26,9 @@ data PFileContent =
   deriving (Show, Eq)
 
 fileP :: Parser [PFileContent]
-fileP = lxs (pure ()) *> many (topLevel *> lxs fileContentP)
+fileP = lxs (pure ()) 
+  *> many (topLevel *> lxs fileContentP)
+  <* lxs (pure ()) <* eof
 
 fileContentP :: Parser PFileContent
 fileContentP =
