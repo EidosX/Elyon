@@ -25,7 +25,7 @@ data PAssignment patt term = PA_FuncAssignment {
   paa_funcName :: Text,
   paa_defaultArgs :: [(DefaultArgNamed, patt, Maybe term)],
   paa_args :: [patt],
-  paa_retPattern :: Maybe patt,
+  paa_retCond :: Maybe term,
   paa_body :: Maybe term,
   paa_letBindings :: [(PAssignment patt term)],
   paa_useStmts :: [PUseStatement]
@@ -49,8 +49,8 @@ assignmentP pattP termP equalSignP = withPos $ do
   args <- fmap concat . optionMaybe . lxs $ 
     argListP (char '(') (char ')') pattP
 
-  retPattern <- optionMaybe . lxs $
-    (indented *> lxs (char ':') *> indented *> (lxs pattP))
+  retCond <- optionMaybe . lxs $
+    (indented *> lxs (char ':') *> indented *> (lxs termP))
 
   body <- optionMaybe
     (indented *> try (lxs equalSignP) *> indented *> termP)
@@ -69,7 +69,7 @@ assignmentP pattP termP equalSignP = withPos $ do
     paa_funcName = funcName,
     paa_defaultArgs = defaultArgs,
     paa_args = args,
-    paa_retPattern = retPattern,
+    paa_retCond = retCond,
     paa_body = body,
     paa_letBindings = letBindings,
     paa_useStmts = useStmts
@@ -87,7 +87,7 @@ defaultArgP pattP termP = do
 
 instance (Show patt, Show term) => Show (PAssignment patt term) where
   show (PA_FuncAssignment 
-          funcName defArgs args retPattern 
+          funcName defArgs args retCond 
           body letBindings useStmts) =
     T.unpack funcName <> defArgs' <> args' <> retPatt' 
       <> body' <> let' <> use'
@@ -95,8 +95,8 @@ instance (Show patt, Show term) => Show (PAssignment patt term) where
             "{" <> intercalate ", " (map show defArgs) <> "}"
           args' = if null args then ""  else 
             "(" <> intercalate ", " (map show args) <> ")"
-          retPatt' = case retPattern of Nothing -> ""
-                                        Just s -> ": " <> show s
+          retPatt' = case retCond of Nothing -> ""
+                                     Just s -> ": " <> show s
           body' = case body of Nothing -> ""
                                Just b  -> " = " <> show b
           let' = if null letBindings then ""
