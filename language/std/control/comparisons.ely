@@ -3,6 +3,15 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
+use std.control.binop{Binop}
+
+def Ordering
+  dat Lesser
+  dat Equal
+  dat Greater
+
+trait Ord for (t: Type)
+  compare(a: t, b: t): Ordering
 
 ==(a, a) = True
 ==(a, b) = False
