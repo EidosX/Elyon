@@ -12,6 +12,7 @@ import Elyon.Parser.Terms (PTerm, PTPattern, termP, termPatternP)
 import Elyon.Parser.Assignments (PAssignment, assignmentP)
 import Elyon.Parser.Traits (PTraitDecl, traitP, implP) 
 import Elyon.Parser.UseStatements (PUseStatement, useStmtP)
+import Elyon.Parser.Dat (PDef, datP, defP)
 import Text.Parsec.Indent (topLevel)
 import Text.Parsec (many, char, (<|>), string)
 
@@ -20,6 +21,8 @@ data PFileContent =
   | PFA_TraitDecl PTraitDecl
   | PFA_ImplDecl PTraitDecl
   | PFA_UseStmt PUseStatement
+  | PFA_Dat PTPattern
+  | PFA_Def PDef
   deriving (Show, Eq)
 
 fileP :: Parser [PFileContent]
@@ -30,5 +33,7 @@ fileContentP =
       fmap PFA_TraitDecl traitP
   <|> fmap PFA_ImplDecl implP
   <|> fmap PFA_UseStmt (string "use " *> useStmtP)
+  <|> fmap PFA_Dat datP
+  <|> fmap PFA_Def defP
   <|> fmap PFA_Assignment 
       (assignmentP termPatternP termP (char '='))
